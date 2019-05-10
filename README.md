@@ -10,4 +10,10 @@ If you'd like to understand how it all works, check out the [architecture docume
 
 If you'd just like to get it up and running, check out the [quickstart](docs/quickstart.md)
 
-## Acknowldgements
+## Acknowledgements
+Like any modern project, this one stands on the shoulders of others that are leveraged heavily in different ways here:
+
+* [s3pypi](https://github.com/novemberfiveco/s3pypi) - Provides a really nice set of CloudFormation templates for setting up an S3 bucket with a combination of CloudFront and AWS Certificate Manager so that `pip install` will work correctly.
+* [Serverless Framework](http://serverless.com) - The leaders in serverless tooling eases the packaging and trigger management for functions.
+* [Serverless Stack](https://serverless-stack.com/) - The canonical real world example for building secure, serverless webapps.
+* [github-cognito-openid-wrapper](https://github.com/TimothyJones/github-cognito-openid-wrapper) - Bridges the gap between Cognito and the GitHub login system so that API endpoints can be secured using an authenticator familiar to developers.
