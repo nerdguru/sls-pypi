@@ -1,0 +1,40 @@
+in cfn-certificate-provider do *.nerdguru.net and Z2UMXCAQ5AV4O
+read -p "domain name: " DOMAIN_NAME
+read -p "hosted zone id: " HOSTED_ZONE
+aws cloudformation create-stack --stack-name cfn-certificate-provider-demo \
+	--template-body file://cloudformation/demo-stack.yaml \
+	--parameters ParameterKey=DomainName,ParameterValue=$DOMAIN_NAME \
+		     ParameterKey=HostedZoneId,ParameterValue=$HOSTED_ZONE
+aws cloudformation wait stack-create-complete  --stack-name cfn-certificate-provider-demo
+
+Should take on the order of 3 minutes
+
+then look up the ARN for the cert and, after making sure the bucket doesn't exist:
+read -p "ACM arn: " ACM_CERT_ARN
+read -p "pypi domain name: " PYPI_DOMAIN_NAME
+aws cloudformation create-stack --stack-name pypi \
+    --template-body file://cloudformation/s3-pypi.json \
+    --parameters ParameterKey=AcmCertificateArn,ParameterValue=$ACM_CERT_ARN \
+                 ParameterKey=DomainName,ParameterValue=$PYPI_DOMAIN_NAME \
+	--capabilities CAPABILITY_IAM
+aws cloudformation wait stack-create-complete  --stack-name pypi
+
+Can take on the order of 20 mins
+
+Finally, do an A name record in Route53 from the CloudFront DNS name for a cleaner
+URL or just use the CloudFront one
+
+For now, use s3pypi to distribute packages:
+
+s3pypi --bucket pypi.nerdguru.net
+
+and then test the pip:
+
+source cust/bin/activate
+
+pip install --upgrade example-pkg-petecj2 --extra-index-url https://dzn6zorymk4w7.cloudfront.net
+
+If I can glue these two together (and add CloudFront logging), it should be a matter of:
+
+1) Deploy custom CloudFormation functions for Cognito and Certs (assuming I can combine them)
+2) sls deploy (assumning I can combine the two CF templates used above with what I already have)

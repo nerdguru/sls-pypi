@@ -1,0 +1,3 @@
+  4 hrs - Pre 5/19 on investigating s3pypi, back end drawings, and adapting the serverless Python example in predecessor repo
+2.5 hrs - 5/19 discovered cfn-certificate-provider while trying to automate the cert creation
+        - If I can glue together cfn-certificate-provider and s3pypi that should do it for the pip front end
