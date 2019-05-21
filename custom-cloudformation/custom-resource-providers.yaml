@@ -8,6 +8,9 @@ Parameters:
   CFNCustomProviderZipFileName:
     Type: String
     Default: 'cfn-certificate-provider-0.2.4.zip'
+  UPCustomProviderZipFileName:
+    Type: String
+    Default: 'cfn-cognito-user-pools.zip'
 Resources:
   LambdaPolicy:
     Type: AWS::IAM::Policy
@@ -64,3 +67,121 @@ Resources:
       Role: !GetAtt 'LambdaRole.Arn'
       Runtime: python3.6
       Timeout: 300
+  LambdaForCloudFormation:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: LambdaForCF
+      AssumeRolePolicyDocument:
+        Statement:
+          -
+            Effect: Allow
+            Action: 'sts:AssumeRole'
+            Principal:
+              Service: lambda.amazonaws.com
+      Policies:
+        -
+          PolicyName: WriteCloudWatchLogs
+          PolicyDocument:
+            Statement:
+              -
+                Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: 'arn:aws:logs:*:*:*'
+        -
+          PolicyName: UpdateUserPoolClient
+          PolicyDocument:
+            Statement:
+              -
+                Effect: Allow
+                Action: 'cognito-idp:UpdateUserPoolClient'
+                Resource: 'arn:aws:cognito-idp:*:*:userpool/*'
+        -
+          PolicyName: ManageUserPoolDomain
+          PolicyDocument:
+            Statement:
+              -
+                Effect: Allow
+                Action: 'cognito-idp:CreateUserPoolDomain'
+                Resource: 'arn:aws:cognito-idp:*:*:userpool/*'
+              -
+                Effect: Allow
+                Action: 'cognito-idp:DeleteUserPoolDomain'
+                Resource: 'arn:aws:cognito-idp:*:*:userpool/*'
+              -
+                Effect: Allow
+                Action: 'cognito-idp:DescribeUserPoolDomain'
+                Resource: '*'
+        -
+          PolicyName: InvokeLambdaFunction
+          PolicyDocument:
+            Statement:
+              -
+                Effect: Allow
+                Action: 'lambda:InvokeFunction'
+                Resource: 'arn:aws:lambda:*:*:function:*'
+  CloudFormationSendResponse:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: CloudFormationSendResponse
+      Runtime: nodejs8.10
+      Code:
+        S3Bucket: !Ref ResourceBucketName
+        S3Key: !Ref 'UPCustomProviderZipFileName'
+      Handler: sendResponse.handler
+      Role: !GetAtt LambdaForCloudFormation.Arn
+  CloudFormationCognitoUserPoolClientSettings:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: CloudFormationCognitoUserPoolClientSettings
+      Runtime: nodejs8.10
+      Code:
+        S3Bucket: !Ref ResourceBucketName
+        S3Key: !Ref 'UPCustomProviderZipFileName'
+      Handler: userPoolClientSettings.handler
+      Role: !GetAtt LambdaForCloudFormation.Arn
+    DependsOn: CloudFormationSendResponse
+  CloudFormationCognitoUserPoolDomain:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: CloudFormationCognitoUserPoolDomain
+      Runtime: nodejs8.10
+      Code:
+        S3Bucket: !Ref ResourceBucketName
+        S3Key: !Ref 'UPCustomProviderZipFileName'
+      Handler: userPoolDomain.handler
+      Role: !GetAtt LambdaForCloudFormation.Arn
+    DependsOn: CloudFormationSendResponse
+  UserPoolTest:
+    Type: 'AWS::Cognito::UserPool'
+    Properties:
+      UserPoolName: UserPoolTest
+  UserPoolTestClient:
+    Type: 'AWS::Cognito::UserPoolClient'
+    Properties:
+      ClientName: UserPoolTestClient
+      GenerateSecret: true
+      UserPoolId: !Ref UserPoolTest
+  UserPoolTestClientSettings:
+    Type: 'Custom::CognitoUserPoolClientSettings'
+    Properties:
+      ServiceToken: !GetAtt CloudFormationCognitoUserPoolClientSettings.Arn
+      UserPoolId: !Ref UserPoolTest
+      UserPoolClientId: !Ref UserPoolTestClient
+      SupportedIdentityProviders:
+        - COGNITO
+      CallbackURL: 'https://www.amazon.com'
+      LogoutURL: 'https://www.google.com'
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows:
+        - code
+      AllowedOAuthScopes:
+        - openid
+  UserPoolTestDomain:
+    Type: 'Custom::CognitoUserPoolDomain'
+    Properties:
+      ServiceToken: !GetAtt CloudFormationCognitoUserPoolDomain.Arn
+      UserPoolId: !Ref UserPoolTest
+      Domain: 'csco-test-domain'

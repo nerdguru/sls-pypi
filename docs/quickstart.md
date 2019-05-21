@@ -29,5 +29,5 @@ aws cloudformation create-stack \
 	--capabilities CAPABILITY_IAM \
 	--stack-name sls-pypi-cf-resource-providers \
 	--template-body file://custom-resource-providers.yaml \
-  --parameters ParameterKey=ResourceBucketName,ParameterValue=$BUCKET_NAME
+    --parameters ParameterKey=ResourceBucketName,ParameterValue=$BUCKET_NAME
 ```
