@@ -1,3 +1,7 @@
+ 20 hrs - Beginning 4/18 and ending 5/8, this is the prior work down the CLI path
   4 hrs - Pre 5/19 on investigating s3pypi, back end drawings, and adapting the serverless Python example in predecessor repo
 2.5 hrs - 5/19 discovered cfn-certificate-provider while trying to automate the cert creation
         - If I can glue together cfn-certificate-provider and s3pypi that should do it for the pip front end
+  2 hrs - 5/20, cleaning up repo and documenting next steps as issues, requesting company paid AWS account
+        - Finding a cheap search solution
+        - Converting cfn-certificate-provider custom resource provider to not depend on their bucket

@@ -1,4 +1,4 @@
-# Serverless PyPi With Metrics
+# Serverless PyPi
 `pip` is amazing and lets Python coders bounce off each other by sharing code
 easily.  The back end of pip is provided by [PyPi.org](http://pypi.org) and while that eases the burden of finding useful packages, it doesn't quite forster the same community dynamics through statistics as other languages do.
 
@@ -13,9 +13,10 @@ If you'd just like to get it up and running, check out the [quickstart](docs/qui
 ## Acknowledgements
 Like any modern project, this one stands on the shoulders of others that are leveraged heavily in different ways here:
 
-* [cfn-certificate-provider](https://binx.io/blog/2018/10/05/automated-provisioning-of-acm-certificates-using-route53-in-cloudformation/) - Automates the creation of the ACM cert and DNS validation through Route53.
+* [cfn-certificate-provider](https://github.com/binxio/cfn-certificate-provider) - Automates the creation of the ACM cert and DNS validation through Route53.
 * [s3pypi](https://github.com/novemberfiveco/s3pypi) - Provides a really nice set of CloudFormation templates for setting up an S3 bucket with a combination of CloudFront and AWS Certificate Manager so that `pip install` will work correctly.
 * [Serverless Framework](http://serverless.com) - The leaders in serverless tooling eases the packaging and trigger management for functions.
 * [Serverless Stack](https://serverless-stack.com/) - The canonical real world example for building secure, serverless webapps.
 * [CloudFormationCognitoCustomResources](https://github.com/rosberglinhares/CloudFormationCognitoCustomResources) - Per [this Stack Overflow thread](https://stackoverflow.com/questions/49524493/cloudformation-cognito-how-to-setup-app-client-settings-domain-and-federated/50980165#50980165), not all the steps required to set up Cognito properly to protect a set of API Endpoints are possible with default CloudFormation constructs.
 * [github-cognito-openid-wrapper](https://github.com/TimothyJones/github-cognito-openid-wrapper) - Bridges the gap between Cognito and the GitHub login system so that API endpoints can be secured using an authenticator familiar to developers.
+* [fuse](https://github.com/krisk/fuse) - Amazingly simple Javascript library used for site search of the web presence.
