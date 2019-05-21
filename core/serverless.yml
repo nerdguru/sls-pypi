@@ -1,0 +1,277 @@
+service: sls-pypi
+
+frameworkVersion: ">=1.1.0 <2.0.0"
+
+plugins:
+  - serverless-s3-sync
+
+provider:
+  name: aws
+  runtime: python2.7
+  environment:
+    DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+    COGNITO_USER_POOL: ${self:service}-${opt:stage, self:provider.stage}
+    COGNITO_DOMAIN: ${self:service}-${opt:stage, self:provider.stage}
+    COGNITO_IDENTITY_POOL: slspypi${opt:stage, self:provider.stage}
+    WEB_BUCKET_NAME: ${self:service}-${opt:stage, self:provider.stage}-web
+    TEMPLATE_BUCKET_NAME: ${self:service}-${opt:stage, self:provider.stage}-templ
+    SNS_TOPIC_NAME: ${self:service}-${opt:stage, self:provider.stage}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+
+# Plugin settings to sync files in the correct buckets
+# Per https://github.com/k1LoW/serverless-s3-sync
+custom:
+  s3Sync:
+    - bucketName: ${self:provider.environment.TEMPLATE_BUCKET_NAME}
+      localDir: ./templates
+
+functions:
+# API Functions
+  create:
+    handler: sets/create.create
+    events:
+      - http:
+          path: sets
+          method: post
+          cors: true
+
+  list:
+    handler: sets/list.list
+    events:
+      - http:
+          path: sets
+          method: get
+          cors: true
+
+  get:
+    handler: sets/get.get
+    events:
+      - http:
+          path: sets/{id}
+          method: get
+          cors: true
+
+  update:
+    handler: sets/update.update
+    events:
+      - http:
+          path: sets/{id}
+          method: put
+          cors: true
+
+  delete:
+    handler: sets/delete.delete
+    events:
+      - http:
+          path: sets/{id}
+          method: delete
+          cors: true
+
+# Batch Functions
+# TODO
+
+resources:
+  # CloudFormation yml for dependent services
+  Resources:
+
+    # Dynamo Table for X
+    # Uses an environment variable for the table name
+    setsDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+
+    # Cognito User Pool
+    # Uses an enironment variable for the pool name
+    CognitoUserPool:
+      Type: 'AWS::Cognito::UserPool'
+      Properties:
+        UserPoolName : ${self:provider.environment.COGNITO_USER_POOL}
+        UsernameAttributes :
+          - email
+
+    # Cognitio App Client
+    # Uses the same app name as the user pool name
+    # Note: The Ref output from the CognitoUserPool is an input here
+    CognitoAppClient:
+      Type: 'AWS::Cognito::UserPoolClient'
+      Properties:
+        ClientName: ${self:provider.environment.COGNITO_USER_POOL}
+        ExplicitAuthFlows:
+          - ADMIN_NO_SRP_AUTH
+        GenerateSecret: True
+        UserPoolId: !Ref CognitoUserPool
+
+    # Cognito Client Settings
+    # Note: The Ref output from the CognitoUserPool and CognitoAppClient are inputs here
+    # The ServiceToken is the ARN of the associated custom resource handler,
+    # taken from the USER_POOL_CLIENT_SETTINGS environment variable
+    UserPoolClientSettings:
+      Type: 'Custom::CognitoUserPoolClientSettings'
+      Properties:
+        ServiceToken: ${env:USER_POOL_CLIENT_SETTINGS}
+        UserPoolId: !Ref CognitoUserPool
+        UserPoolClientId: !Ref CognitoAppClient
+        SupportedIdentityProviders:
+          - COGNITO
+        CallbackURL: 'https://www.amazon.com'
+        LogoutURL: 'https://www.google.com'
+        AllowedOAuthFlowsUserPoolClient: true
+        AllowedOAuthFlows:
+          - code
+        AllowedOAuthScopes:
+          - openid
+
+    # Custom Resource for Domain
+    # The ServiceToken is the ARN of the associated custom resource handler
+    # taken from the USER_POOL_DOMAIN environment variable
+    CognitoUserPoolDomain:
+      Type: 'Custom::CognitoUserPoolDomain'
+      Properties:
+        ServiceToken: ${env:USER_POOL_DOMAIN}
+        UserPoolId: !Ref CognitoUserPool
+        Domain: ${self:provider.environment.COGNITO_DOMAIN}
+
+    # Identity Pool
+    CognitoIdentityPool:
+      Type: AWS::Cognito::IdentityPool
+      Properties :
+        AllowUnauthenticatedIdentities : false
+        IdentityPoolName : ${self:provider.environment.COGNITO_IDENTITY_POOL}
+        CognitoIdentityProviders :
+          - ClientId : !Ref CognitoAppClient
+            ProviderName : !GetAtt CognitoUserPool.ProviderName
+            ServerSideTokenCheck : true
+
+    # Create a role for unauthorized acces to AWS resources. Very limited access.
+    # Per https://gist.github.com/singledigit/2c4d7232fa96d9e98a3de89cf6ebe7a5
+    CognitoUnAuthorizedRole:
+      Type: "AWS::IAM::Role"
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Principal:
+                Federated: "cognito-identity.amazonaws.com"
+              Action:
+                - "sts:AssumeRoleWithWebIdentity"
+              Condition:
+                StringEquals:
+                  "cognito-identity.amazonaws.com:aud": !Ref CognitoIdentityPool
+                "ForAnyValue:StringLike":
+                  "cognito-identity.amazonaws.com:amr": unauthenticated
+        Policies:
+          - PolicyName: "CognitoUnauthorizedPolicy"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action:
+                    - "mobileanalytics:PutEvents"
+                    - "cognito-sync:*"
+                  Resource: "*"
+
+    # Create a role for authorized acces to AWS resources. Control what your user can access.
+    # This example only allows Lambda invokation
+    # Only allows users in the previously created Identity Pool
+    CognitoAuthorizedRole:
+      Type: "AWS::IAM::Role"
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Principal:
+                Federated: "cognito-identity.amazonaws.com"
+              Action:
+                - "sts:AssumeRoleWithWebIdentity"
+              Condition:
+                StringEquals:
+                  "cognito-identity.amazonaws.com:aud": !Ref CognitoIdentityPool
+                "ForAnyValue:StringLike":
+                  "cognito-identity.amazonaws.com:amr": authenticated
+        Policies:
+          - PolicyName: "CognitoAuthorizedPolicy"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action:
+                    - "mobileanalytics:PutEvents"
+                    - "cognito-sync:*"
+                    - "cognito-identity:*"
+                  Resource: "*"
+                - Effect: "Allow"
+                  Action:
+                    - "lambda:InvokeFunction"
+                  Resource: "*"
+
+    # Assigns the roles to the Identity Pool
+    IdentityPoolRoleMapping:
+      Type: "AWS::Cognito::IdentityPoolRoleAttachment"
+      Properties:
+        IdentityPoolId: !Ref CognitoIdentityPool
+        Roles:
+          authenticated: !GetAtt CognitoAuthorizedRole.Arn
+          unauthenticated: !GetAtt CognitoUnAuthorizedRole.Arn
+
+    # S3 bucket per https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/quickref-s3.html
+    WebS3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.WEB_BUCKET_NAME}
+        AccessControl: PublicRead
+        WebsiteConfiguration:
+          IndexDocument: index.html
+          ErrorDocument: error.html
+
+    BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        PolicyDocument:
+          Id: MPolicy
+          Version: "2012-10-17"
+          Statement:
+            - Sid: PublicReadForGetBucketObjects
+              Effect: Allow
+              Principal: '*'
+              Action: 's3:GetObject'
+              Resource: !Join
+                - ''
+                - - 'arn:aws:s3:::'
+                  - !Ref WebS3Bucket
+                  - /*
+        Bucket: !Ref WebS3Bucket
+
+    # Internal bucket for templates
+    TemplateS3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.TEMPLATE_BUCKET_NAME}
+
+    # SNS Topic used to namange batch processing
+    SetsSNSTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ${self:provider.environment.SNS_TOPIC_NAME}

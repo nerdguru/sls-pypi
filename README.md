@@ -8,7 +8,7 @@ So if you were trying to build a Python-based sub-community, it would be nice to
 
 If you'd like to understand how it all works, check out the [architecture documentation](docs/architecture.md).
 
-If you'd just like to get it up and running, check out the [quickstart](docs/quickstart.md)
+If you'd just like to get it up and running, check out the [quickstart](docs/quickstart.md).
 
 ## Acknowledgements
 Like any modern project, this one stands on the shoulders of others that are leveraged heavily in different ways here:
@@ -19,4 +19,5 @@ Like any modern project, this one stands on the shoulders of others that are lev
 * [Serverless Stack](https://serverless-stack.com/) - The canonical real world example for building secure, serverless webapps.
 * [CloudFormationCognitoCustomResources](https://github.com/rosberglinhares/CloudFormationCognitoCustomResources) - Per [this Stack Overflow thread](https://stackoverflow.com/questions/49524493/cloudformation-cognito-how-to-setup-app-client-settings-domain-and-federated/50980165#50980165), not all the steps required to set up Cognito properly to protect a set of API Endpoints are possible with default CloudFormation constructs.
 * [github-cognito-openid-wrapper](https://github.com/TimothyJones/github-cognito-openid-wrapper) - Bridges the gap between Cognito and the GitHub login system so that API endpoints can be secured using an authenticator familiar to developers.
+* [serverless-s3-sync](https://github.com/k1LoW/serverless-s3-sync) - Serverless Plug-In for synch'ing files from a local folder to an S3 bucket.
 * [fuse](https://github.com/krisk/fuse) - Amazingly simple Javascript library used for site search of the web presence.
