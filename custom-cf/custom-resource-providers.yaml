@@ -12,6 +12,7 @@ Parameters:
     Type: String
     Default: 'cfn-cognito-user-pools.zip'
 Resources:
+  # First set of resources sets up the certificate provider
   LambdaPolicy:
     Type: AWS::IAM::Policy
     DependsOn:
@@ -67,6 +68,8 @@ Resources:
       Role: !GetAtt 'LambdaRole.Arn'
       Runtime: python3.6
       Timeout: 300
+
+  # Next set of resources sets up cognito
   LambdaForCloudFormation:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -186,6 +189,7 @@ Resources:
       UserPoolId: !Ref UserPool
       Domain: 'csco-domain'
 
+# Output the arn's used as service tokens so they can be used by serverless.yml
 Outputs:
   UserPoolClientSettings:
     Description: Service token
