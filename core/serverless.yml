@@ -129,7 +129,7 @@ resources:
     UserPoolClientSettings:
       Type: 'Custom::CognitoUserPoolClientSettings'
       Properties:
-        ServiceToken: ${env:USER_POOL_CLIENT_SETTINGS}
+        ServiceToken: !ImportValue sls-pypi-cf-resource-providers-UserPoolClientSettings
         UserPoolId: !Ref CognitoUserPool
         UserPoolClientId: !Ref CognitoAppClient
         SupportedIdentityProviders:
@@ -148,7 +148,7 @@ resources:
     CognitoUserPoolDomain:
       Type: 'Custom::CognitoUserPoolDomain'
       Properties:
-        ServiceToken: ${env:USER_POOL_DOMAIN}
+        ServiceToken: !ImportValue sls-pypi-cf-resource-providers-UserPoolDomain
         UserPoolId: !Ref CognitoUserPool
         Domain: ${self:provider.environment.COGNITO_DOMAIN}
 

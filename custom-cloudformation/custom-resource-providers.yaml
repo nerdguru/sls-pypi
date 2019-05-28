@@ -154,22 +154,22 @@ Resources:
       Handler: userPoolDomain.handler
       Role: !GetAtt LambdaForCloudFormation.Arn
     DependsOn: CloudFormationSendResponse
-  UserPoolTest:
+  UserPool:
     Type: 'AWS::Cognito::UserPool'
     Properties:
-      UserPoolName: UserPoolTest
-  UserPoolTestClient:
+      UserPoolName: UserPool
+  UserPoolClient:
     Type: 'AWS::Cognito::UserPoolClient'
     Properties:
-      ClientName: UserPoolTestClient
+      ClientName: UserPoolClient
       GenerateSecret: true
-      UserPoolId: !Ref UserPoolTest
-  UserPoolTestClientSettings:
+      UserPoolId: !Ref UserPool
+  UserPoolClientSettings:
     Type: 'Custom::CognitoUserPoolClientSettings'
     Properties:
       ServiceToken: !GetAtt CloudFormationCognitoUserPoolClientSettings.Arn
-      UserPoolId: !Ref UserPoolTest
-      UserPoolClientId: !Ref UserPoolTestClient
+      UserPoolId: !Ref UserPool
+      UserPoolClientId: !Ref UserPoolClient
       SupportedIdentityProviders:
         - COGNITO
       CallbackURL: 'https://www.amazon.com'
@@ -179,9 +179,21 @@ Resources:
         - code
       AllowedOAuthScopes:
         - openid
-  UserPoolTestDomain:
+  UserPoolDomain:
     Type: 'Custom::CognitoUserPoolDomain'
     Properties:
       ServiceToken: !GetAtt CloudFormationCognitoUserPoolDomain.Arn
-      UserPoolId: !Ref UserPoolTest
-      Domain: 'csco-test-domain'
+      UserPoolId: !Ref UserPool
+      Domain: 'csco-domain'
+
+Outputs:
+  UserPoolClientSettings:
+    Description: Service token
+    Value: !GetAtt CloudFormationCognitoUserPoolClientSettings.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolClientSettings"
+  UserPoolDomain:
+    Description: Service token
+    Value: !GetAtt CloudFormationCognitoUserPoolDomain.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolDomain"
