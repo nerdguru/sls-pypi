@@ -66,3 +66,11 @@ Outputs:
         - !Ref DomainName
     Export:
       Name: !Sub "${AWS::StackName}-PypiDomain"
+  LogDomain:
+    Description: Logging Bucket Domain Name
+    Value: !Join
+      - '.'
+      - - 'log'
+        - !Ref DomainName
+    Export:
+      Name: !Sub "${AWS::StackName}-LogDomain"

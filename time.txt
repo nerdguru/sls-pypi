@@ -9,4 +9,5 @@
 2.5 hrs - 5/28 solved #6, #3 and #4 are next
         - Converted the s3-pypi.json to yaml
         - Combining s3-pypi and cfn-certificate-provider yaml files
-2.5 hrs - 5/30 still working on combining s3-pypi and cfn-certificate-provider yaml files
+  3 hrs - 5/30 still working on combining s3-pypi and cfn-certificate-provider yaml files
+        - Solving #2

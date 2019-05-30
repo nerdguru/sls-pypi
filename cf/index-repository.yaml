@@ -22,6 +22,10 @@ Mappings:
     sa-east-1:
       WebsiteEndpoint: s3-website-sa-east-1.amazonaws.com
 Resources:
+  LoggingBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !ImportValue sls-pypi-certificate-LogDomain
   PyPiS3Bucket:
     Type: 'AWS::S3::Bucket'
     Properties:
@@ -79,6 +83,11 @@ Resources:
           TargetOriginId: PyPiS3BucketOrigin
           ViewerProtocolPolicy: https-only
         Enabled: 'true'
+        Logging:
+          Bucket: !Join
+            - '.'
+            - - !Ref LoggingBucket
+              - 's3.amazonaws.com'
         Origins:
           - CustomOriginConfig:
               HTTPPort: '80'
