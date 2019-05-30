@@ -1,7 +1,7 @@
 in cfn-certificate-provider do *.nerdguru.net and Z2UMXCAQ5AV4O
 read -p "domain name: " DOMAIN_NAME
 read -p "hosted zone id: " HOSTED_ZONE
-aws cloudformation create-stack --stack-name cfn-certificate-provider-demo \
+aws cloudformation create-stack --stack-name certificate \
 	--template-body file://demo-stack.yaml \
 	--parameters ParameterKey=DomainName,ParameterValue=$DOMAIN_NAME \
 		     ParameterKey=HostedZoneId,ParameterValue=$HOSTED_ZONE
@@ -25,6 +25,21 @@ aws cloudformation create-stack --stack-name pypi \
                  ParameterKey=DomainName,ParameterValue=$PYPI_DOMAIN_NAME \
 	--capabilities CAPABILITY_IAM
 aws cloudformation wait stack-create-complete  --stack-name pypi
+
+
+aws cloudformation create-stack --stack-name pypi-combined \
+    --template-body file://combined.yaml \
+    --parameters ParameterKey=HostedZoneId,ParameterValue=$HOSTED_ZONE \
+		 						 ParameterKey=DomainName,ParameterValue=$DOMAIN_NAME \
+                 ParameterKey=PypiDomainName,ParameterValue=$PYPI_DOMAIN_NAME \
+	--capabilities CAPABILITY_IAM
+
+
+	read -p "pypi domain name: " PYPI_DOMAIN_NAME
+	aws cloudformation create-stack --stack-name pypi \
+	    --template-body file://cf/index-repository.json \
+	    --parameters ParameterKey=PypiDomainName,ParameterValue=$PYPI_DOMAIN_NAME \
+		--capabilities CAPABILITY_IAM
 
 Can take on the order of 20 mins
 

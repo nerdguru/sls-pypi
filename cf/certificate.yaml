@@ -1,35 +1,44 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Demo Certificate DNS Record Provider
+Description: Create and validate a certificate
 Parameters:
   HostedZoneId:
     Type: String
-    Default: 'Z2U25GDT473TGQ'
   DomainName:
     Type: String
-    Default: 'demo.binx.cloud'
 
 Resources:
+
+  # Create the new certificate used to provbide CloudFront-based HTTPS
   Certificate:
     Type: Custom::Certificate
     Properties:
-      DomainName: !Ref DomainName
+      DomainName: !Join
+        - '.'
+        - - '*'
+          - !Ref DomainName
       ValidationMethod: DNS
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:binxio-cfn-certificate-provider'
 
+  # Determine when the certificate has been issued using the custom resource
   IssuedCertificate:
     Type: Custom::IssuedCertificate
     Properties:
       CertificateArn: !Ref Certificate
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:binxio-cfn-certificate-provider'
 
+  # Get the DNS record using the custom resource
   CertificateDNSRecord:
     Type: Custom::CertificateDNSRecord
     Properties:
       CertificateArn: !Ref Certificate
-      DomainName: !Ref DomainName
+      DomainName: !Join
+        - '.'
+        - - '*'
+          - !Ref DomainName
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:binxio-cfn-certificate-provider'
 
+  # Validate the DNS record
   DomainValidationRecord:
     Type: AWS::Route53::RecordSetGroup
     Properties:
@@ -44,5 +53,16 @@ Resources:
             - !GetAtt CertificateDNSRecord.Value
 
 Outputs:
-  DNSRecord:
-    Value: !Sub '${CertificateDNSRecord.Name} ${CertificateDNSRecord.Type} ${CertificateDNSRecord.Value}'
+  CertArn:
+    Description: Certificate ARN
+    Value: !Ref Certificate
+    Export:
+      Name: !Sub "${AWS::StackName}-CertificateArn"
+  PypiDomain:
+    Description: Pypi Domain Name
+    Value: !Join
+      - '.'
+      - - 'pypi'
+        - !Ref DomainName
+    Export:
+      Name: !Sub "${AWS::StackName}-PypiDomain"

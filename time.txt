@@ -6,5 +6,7 @@
         - Converting cfn-certificate-provider custom resource provider to not depend on their bucket
         - Converting the custom cognito to a zip file
         - Working on #5
-1.5 hrs - 5/28 solved #6, #3 and #4 are next
+2.5 hrs - 5/28 solved #6, #3 and #4 are next
         - Converted the s3-pypi.json to yaml
+        - Combining s3-pypi and cfn-certificate-provider yaml files
+2.5 hrs - 5/30 still working on combining s3-pypi and cfn-certificate-provider yaml files
