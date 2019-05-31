@@ -74,3 +74,8 @@ Outputs:
         - !Ref DomainName
     Export:
       Name: !Sub "${AWS::StackName}-LogDomain"
+  HostedZoneId:
+    Description: HostedZoneId
+    Value: !Ref HostedZoneId
+    Export:
+      Name: !Sub "${AWS::StackName}-HostedZoneId"

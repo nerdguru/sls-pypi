@@ -41,6 +41,9 @@ aws cloudformation create-stack --stack-name pypi-combined \
 	    --parameters ParameterKey=PypiDomainName,ParameterValue=$PYPI_DOMAIN_NAME \
 		--capabilities CAPABILITY_IAM
 
+		aws cloudformation create-stack --stack-name sls-pypi-recordset \
+		    --template-body file://scratch/recordset.yaml
+
 Can take on the order of 20 mins
 
 Finally, do an A name record in Route53 from the CloudFront DNS name for a cleaner
@@ -55,6 +58,9 @@ and then test the pip:
 source cust/bin/activate
 
 pip install --upgrade example-pkg-petecj2 --extra-index-url https://dzn6zorymk4w7.cloudfront.net
+
+Will find it in:
+/lib/python2.7/site-packages/
 
 If I can glue these two together (and add CloudFront logging), it should be a matter of:
 
