@@ -115,7 +115,7 @@ Resources:
       Comment: 'Setting up the friendly CNAME alias for the CloudFormation Dist'
       HostedZoneId: !ImportValue sls-pypi-certificate-HostedZoneId
       Name: !ImportValue sls-pypi-certificate-PypiDomain
-      Type: 'CNAME'
+      Type: 'A'
   PublishS3PyPiPackages:
     Type: 'AWS::IAM::ManagedPolicy'
     Properties:
