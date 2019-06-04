@@ -3,24 +3,34 @@ Mappings:
   RegionMap:
     us-east-1:
       WebsiteEndpoint: s3-website-us-east-1.amazonaws.com
+      HostedZoneId: Z3AQBSTGFYJSTF
     us-west-2:
       WebsiteEndpoint: s3-website-us-west-2.amazonaws.com
+      HostedZoneId: Z3BJ6K6RIION7M
     us-west-1:
       WebsiteEndpoint: s3-website-us-west-1.amazonaws.com
+      HostedZoneId: Z2F56UZL2M1ACD
     eu-west-1:
       WebsiteEndpoint: s3-website-eu-west-1.amazonaws.com
+      HostedZoneId: Z1BKCTXD74EZPE
     eu-central-1:
       WebsiteEndpoint: s3-website.eu-central-1.amazonaws.com
+      HostedZoneId: Z21DNDUVLTQW6Q
     ap-southeast-1:
       WebsiteEndpoint: s3-website-ap-southeast-1.amazonaws.com
+      HostedZoneId: Z3O0J2DXBE1FTB
     ap-northeast-1:
       WebsiteEndpoint: s3-website-ap-northeast-1.amazonaws.com
+      HostedZoneId: Z2M4EHUR26P7ZW
     ap-southeast-2:
       WebsiteEndpoint: s3-website-ap-southeast-2.amazonaws.com
+      HostedZoneId: Z1WCIGYICN2BYD
     ap-northeast-2:
       WebsiteEndpoint: s3-website.ap-northeast-2.amazonaws.com
+      HostedZoneId: Z3W03O7B5YMIYP
     sa-east-1:
       WebsiteEndpoint: s3-website-sa-east-1.amazonaws.com
+      HostedZoneId: Z7KQH4QJS55SO
 Resources:
   LoggingBucket:
     Type: 'AWS::S3::Bucket'
@@ -116,6 +126,7 @@ Resources:
       HostedZoneId: !ImportValue sls-pypi-certificate-HostedZoneId
       Name: !ImportValue sls-pypi-certificate-PypiDomain
       Type: 'A'
+
   PublishS3PyPiPackages:
     Type: 'AWS::IAM::ManagedPolicy'
     Properties:
@@ -148,3 +159,98 @@ Resources:
                 - - 'arn:aws:s3:::'
                   - !Ref PyPiS3Bucket
                   - /*
+
+  # Internal bucket for templates
+  TemplateS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !ImportValue sls-pypi-certificate-TemplatesDomain
+
+  # S3 bucket per https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/quickref-s3.html
+  WebS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !ImportValue sls-pypi-certificate-WebDomain
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        RedirectAllRequestsTo :
+           HostName: !ImportValue sls-pypi-certificate-BaseDomain
+
+  WebBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      PolicyDocument:
+        Id: MPolicy
+        Version: "2012-10-17"
+        Statement:
+          - Sid: PublicReadForGetBucketObjects
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref WebS3Bucket
+                - /*
+      Bucket: !Ref WebS3Bucket
+
+  WebDNS:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      AliasTarget:
+        DNSName: !FindInMap
+              - RegionMap
+              - !Ref 'AWS::Region'
+              - WebsiteEndpoint
+        HostedZoneId: !FindInMap
+          - RegionMap
+          - !Ref 'AWS::Region'
+          - HostedZoneId
+      Comment: 'Setting up the friendly CNAME alias for the web bucket'
+      HostedZoneId: !ImportValue sls-pypi-certificate-HostedZoneId
+      Name: !ImportValue sls-pypi-certificate-WebDomain
+      Type: 'A'
+
+  BaseS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !ImportValue sls-pypi-certificate-BaseDomain
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: error.html
+
+  BaseBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      PolicyDocument:
+        Id: MPolicy
+        Version: "2012-10-17"
+        Statement:
+          - Sid: PublicReadForGetBucketObjects
+            Effect: Allow
+            Principal: '*'
+            Action: 's3:GetObject'
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref BaseS3Bucket
+                - /*
+      Bucket: !Ref BaseS3Bucket
+
+  BaseDNS:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      AliasTarget:
+        DNSName: !FindInMap
+              - RegionMap
+              - !Ref 'AWS::Region'
+              - WebsiteEndpoint
+        HostedZoneId: !FindInMap
+          - RegionMap
+          - !Ref 'AWS::Region'
+          - HostedZoneId
+      Comment: 'Setting up the friendly CNAME alias for the web bucket'
+      HostedZoneId: !ImportValue sls-pypi-certificate-HostedZoneId
+      Name: !ImportValue sls-pypi-certificate-BaseDomain
+      Type: 'A'

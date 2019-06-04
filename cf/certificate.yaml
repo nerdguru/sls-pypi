@@ -52,12 +52,18 @@ Resources:
           ResourceRecords:
             - !GetAtt CertificateDNSRecord.Value
 
+# Output the certificate ARN and do some central bucket naming given the domain name parameter
 Outputs:
   CertArn:
     Description: Certificate ARN
     Value: !Ref Certificate
     Export:
       Name: !Sub "${AWS::StackName}-CertificateArn"
+  BaseDomain:
+    Description: Base Domain Name
+    Value: !Ref DomainName
+    Export:
+      Name: !Sub "${AWS::StackName}-BaseDomain"
   PypiDomain:
     Description: Pypi Domain Name
     Value: !Join
@@ -74,6 +80,22 @@ Outputs:
         - !Ref DomainName
     Export:
       Name: !Sub "${AWS::StackName}-LogDomain"
+  WebDomain:
+    Description: Web Bucket Domain Name
+    Value: !Join
+      - '.'
+      - - 'www'
+        - !Ref DomainName
+    Export:
+      Name: !Sub "${AWS::StackName}-WebDomain"
+  TemplateDomain:
+    Description: Templates Domain Name
+    Value: !Join
+      - '.'
+      - - 'templates'
+        - !Ref DomainName
+    Export:
+      Name: !Sub "${AWS::StackName}-TemplatesDomain"
   HostedZoneId:
     Description: HostedZoneId
     Value: !Ref HostedZoneId

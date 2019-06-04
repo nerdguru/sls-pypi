@@ -11,3 +11,5 @@
         - Combining s3-pypi and cfn-certificate-provider yaml files
   5 hrs - 5/30 still working on combining s3-pypi and cfn-certificate-provider yaml files
         - Solving #2
+  2 hrs - 6/3 lay out game plan for next set of work
+  1 hrs - 6/4 Working on #24

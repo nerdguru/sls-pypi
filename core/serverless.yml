@@ -236,41 +236,7 @@ resources:
           authenticated: !GetAtt CognitoAuthorizedRole.Arn
           unauthenticated: !GetAtt CognitoUnAuthorizedRole.Arn
 
-    # S3 bucket per https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/quickref-s3.html
-    WebS3Bucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: ${self:provider.environment.WEB_BUCKET_NAME}
-        AccessControl: PublicRead
-        WebsiteConfiguration:
-          IndexDocument: index.html
-          ErrorDocument: error.html
-
-    BucketPolicy:
-      Type: AWS::S3::BucketPolicy
-      Properties:
-        PolicyDocument:
-          Id: MPolicy
-          Version: "2012-10-17"
-          Statement:
-            - Sid: PublicReadForGetBucketObjects
-              Effect: Allow
-              Principal: '*'
-              Action: 's3:GetObject'
-              Resource: !Join
-                - ''
-                - - 'arn:aws:s3:::'
-                  - !Ref WebS3Bucket
-                  - /*
-        Bucket: !Ref WebS3Bucket
-
-    # Internal bucket for templates
-    TemplateS3Bucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: ${self:provider.environment.TEMPLATE_BUCKET_NAME}
-
-    # SNS Topic used to namange batch processing
+    # SNS Topic used to manange batch processing
     SetsSNSTopic:
       Type: AWS::SNS::Topic
       Properties:
