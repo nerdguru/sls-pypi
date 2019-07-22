@@ -12,4 +12,14 @@
   5 hrs - 5/30 still working on combining s3-pypi and cfn-certificate-provider yaml files
         - Solving #2
   2 hrs - 6/3 lay out game plan for next set of work
-  1 hrs - 6/4 Working on #24
+2.5 hrs - 6/4 Working on #24
+        - Working through Cognito setup
+  1 hr  - 6/5 working through Github/Cognito set up manually
+        - Have it deployed, need to test with https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-app-integration.html
+  3 hrs - 7/17, coming back up to speed from where I left off
+        - Get Cognito to redirect to GitHub for login and worked around invalid_client:
+        https://stackoverflow.com/questions/53216244/simple-cognito-user-authentication-with-code-grant-not-working
+        - But now get an invalid_grant
+  2 hrs - 7/18 Still stuck on invalid_grant
+  2 hrs - 7/19 Still stuck on inalid_grant
+  2 hrs - 7/22 Started work on website templates
