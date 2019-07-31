@@ -15,7 +15,10 @@ provider:
     COGNITO_IDENTITY_POOL: slspypi${opt:stage, self:provider.stage}
     WEB_BUCKET_NAME: ${self:service}-${opt:stage, self:provider.stage}-web
     TEMPLATE_BUCKET_NAME: ${self:service}-${opt:stage, self:provider.stage}-templ
+    QUERY_RESULTS_BUCKET_NAME: ${self:service}-${opt:stage, self:provider.stage}-qres
     SNS_TOPIC_NAME: ${self:service}-${opt:stage, self:provider.stage}
+    ATHENA_DB_NAME: ${self:service}-${opt:stage, self:provider.stage}
+    ATHENA_TABLE_NAME: ${self:service}-${opt:stage, self:provider.stage}-cf-table
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -119,7 +122,7 @@ resources:
         ClientName: ${self:provider.environment.COGNITO_USER_POOL}
         ExplicitAuthFlows:
           - ADMIN_NO_SRP_AUTH
-        GenerateSecret: True
+        GenerateSecret: False
         UserPoolId: !Ref CognitoUserPool
 
     # Cognito Client Settings
@@ -241,3 +244,100 @@ resources:
       Type: AWS::SNS::Topic
       Properties:
         TopicName: ${self:provider.environment.SNS_TOPIC_NAME}
+
+    # Internal bucket for templates
+    TemplateS3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.TEMPLATE_BUCKET_NAME}
+
+    # Internal bucket for Athena query results
+    QresultsS3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.QUERY_RESULTS_BUCKET_NAME}
+
+    # Athena database
+    AthenaDB:
+      Type: AWS::Glue::Database
+      Properties:
+        CatalogId: !Ref AWS::AccountId
+        DatabaseInput:
+          Name: ${self:provider.environment.ATHENA_DB_NAME}
+          Description: Athena database for ${self:service}-${opt:stage, self:provider.stage}
+
+    # Athena Table for CloudFront logdata
+    AthenaCFtable:
+      DependsOn: AthenaDB
+      Type: AWS::Glue::Table
+      Properties:
+        CatalogId: !Ref AWS::AccountId
+        DatabaseName: !Ref AthenaDB
+        TableInput:
+          Name: ${self:provider.environment.ATHENA_TABLE_NAME}
+          Description: Define table for CloudFront log data
+          TableType: EXTERNAL_TABLE
+          Parameters:
+            skip.header.line.count: '2'
+          StorageDescriptor:
+            OutputFormat: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            Columns:
+            - Name: date
+              Type: date
+            - Name: time
+              Type: string
+            - Name: location
+              Type: string
+            - Name: bytes
+              Type: bigint
+            - Name: request_ip
+              Type: string
+            - Name: method
+              Type: string
+            - Name: host
+              Type: string
+            - Name: uri
+              Type: string
+            - Name: status
+              Type: int
+            - Name: referrer
+              Type: string
+            - Name: user_agent
+              Type: string
+            - Name: query_string
+              Type: string
+            - Name: cookie
+              Type: string
+            - Name: result_type
+              Type: string
+            - Name: request_id
+              Type: string
+            - Name: host_header
+              Type: string
+            - Name: request_protocol
+              Type: string
+            - Name: request_bytes
+              Type: bigint
+            - Name: time_taken
+              Type: float
+            - Name: xforwarded_for
+              Type: string
+            - Name: ssl_protocol
+              Type: string
+            - Name: ssl_cipher
+              Type: string
+            - Name: response_result_type
+              Type: string
+            - Name: http_version
+              Type: string
+            - Name: fle_status
+              Type: string
+            - Name: fle_encrypted_fields
+              Type: int
+            InputFormat: org.apache.hadoop.mapred.TextInputFormat
+            Location: !Join [ '', [ 's3://',  !ImportValue sls-pypi-certificate-LogDomain, /] ]
+            SerdeInfo:
+              Parameters:
+                field.delim: "\t"
+              SerializationLibrary: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            StoredAsSubDirectories: 'false'
