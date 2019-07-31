@@ -1,13 +1,15 @@
 # Serverless PyPi Quickstart
 
-The following are requirements for installing Serverles PyPi:
+The following are requirements for installing Serverless PyPi:
 
-* An AWS Account
-* The AWS cli installed
-* A base domain name created in Route53
-* The Serverless Framework installed
+* [An AWS Account](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/)
+* [The AWS cli installed](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
+* [The SAM cli installed](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+* [A base domain name registered in Route53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/domain-register.html)
+* [The Serverless Framework installed](https://serverless.com/framework/docs/getting-started/)
+* [An OAuth App created on GitHub](https://developer.github.com/apps/building-oauth-apps/creating-an-oauth-app/)
 
-The installation requires two steps.
+The installation requires six steps:
 
 ## Step 1: Installing Custom CloudFormation Resource Providers
 Not all assets required to operate Serverles Pypi can be created and integrated
@@ -62,4 +64,6 @@ this step varies according to the CloudFront distribution setup, taking 30 minut
 cd ../metrics
 sls deploy
 ```
-## Step 5: Testing the deployment
+## Step 5: Installing and Configuring Oauth
+
+## Step 6: Testing the deployment

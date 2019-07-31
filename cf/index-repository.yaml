@@ -160,12 +160,6 @@ Resources:
                   - !Ref PyPiS3Bucket
                   - /*
 
-  # Internal bucket for templates
-  TemplateS3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !ImportValue sls-pypi-certificate-TemplatesDomain
-
   # S3 bucket per https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/quickref-s3.html
   WebS3Bucket:
     Type: AWS::S3::Bucket

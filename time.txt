@@ -21,5 +21,8 @@
         https://stackoverflow.com/questions/53216244/simple-cognito-user-authentication-with-code-grant-not-working
         - But now get an invalid_grant
   2 hrs - 7/18 Still stuck on invalid_grant
-  2 hrs - 7/19 Still stuck on inalid_grant
-  2 hrs - 7/22 Started work on website templates
+  2 hrs - 7/19 Still stuck on invalid_grant
+  5 hrs - 7/22 Started work on website templates and building sample packages
+  1 hr  - 7/22 Preliminary Athena research, which is mega cool
+1.5 hrs - 7/24 Athena CloudFormation setup, DB working, table next
+  2 hrs - 7/30 Table working, query-able

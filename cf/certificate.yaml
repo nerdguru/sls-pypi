@@ -88,14 +88,6 @@ Outputs:
         - !Ref DomainName
     Export:
       Name: !Sub "${AWS::StackName}-WebDomain"
-  TemplateDomain:
-    Description: Templates Domain Name
-    Value: !Join
-      - '.'
-      - - 'templates'
-        - !Ref DomainName
-    Export:
-      Name: !Sub "${AWS::StackName}-TemplatesDomain"
   HostedZoneId:
     Description: HostedZoneId
     Value: !Ref HostedZoneId
