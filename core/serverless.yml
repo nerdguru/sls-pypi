@@ -8,7 +8,7 @@ plugins:
 provider:
   name: aws
   runtime: python2.7
-  environment:
+  custom:
     DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
     COGNITO_USER_POOL: ${self:service}-${opt:stage, self:provider.stage}
     COGNITO_DOMAIN: ${self:service}-${opt:stage, self:provider.stage}
@@ -19,6 +19,7 @@ provider:
     SNS_TOPIC_NAME: ${self:service}-${opt:stage, self:provider.stage}
     ATHENA_DB_NAME: ${self:service}-${opt:stage, self:provider.stage}
     ATHENA_TABLE_NAME: ${self:service}-${opt:stage, self:provider.stage}-cf-table
+    ATHENA_TOPIC: ${self:service}-${opt:stage, self:provider.stage}-cf-topic
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -28,13 +29,13 @@ provider:
         - dynamodb:PutItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
-      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.custom.DYNAMODB_TABLE}"
 
 # Plugin settings to sync files in the correct buckets
 # Per https://github.com/k1LoW/serverless-s3-sync
 custom:
   s3Sync:
-    - bucketName: ${self:provider.environment.TEMPLATE_BUCKET_NAME}
+    - bucketName: ${self:provider.custom.TEMPLATE_BUCKET_NAME}
       localDir: ./templates
 
 functions:
@@ -80,7 +81,19 @@ functions:
           cors: true
 
 # Batch Functions
-# TODO
+  athenaquery:
+    handler: batch/athenaquery.athenaquery
+    role: athenaqueryRole
+    timeout: 600
+    environment:
+      QUERY_RESULTS_BUCKET_NAME: ${self:provider.custom.QUERY_RESULTS_BUCKET_NAME}
+      ATHENA_DB_NAME: ${self:provider.custom.ATHENA_DB_NAME}
+      ATHENA_TABLE_NAME: ${self:provider.custom.ATHENA_TABLE_NAME}
+      TIMEOUT: 600
+    events:
+      - sns:
+          topicName: ${self:provider.custom.ATHENA_TOPIC}
+          displayName: Triggers Athena queries of CloudFront logs
 
 resources:
   # CloudFormation yml for dependent services
@@ -102,14 +115,14 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+        TableName: ${self:provider.custom.DYNAMODB_TABLE}
 
     # Cognito User Pool
     # Uses an enironment variable for the pool name
     CognitoUserPool:
       Type: 'AWS::Cognito::UserPool'
       Properties:
-        UserPoolName : ${self:provider.environment.COGNITO_USER_POOL}
+        UserPoolName : ${self:provider.custom.COGNITO_USER_POOL}
         UsernameAttributes :
           - email
 
@@ -119,7 +132,7 @@ resources:
     CognitoAppClient:
       Type: 'AWS::Cognito::UserPoolClient'
       Properties:
-        ClientName: ${self:provider.environment.COGNITO_USER_POOL}
+        ClientName: ${self:provider.custom.COGNITO_USER_POOL}
         ExplicitAuthFlows:
           - ADMIN_NO_SRP_AUTH
         GenerateSecret: False
@@ -153,14 +166,14 @@ resources:
       Properties:
         ServiceToken: !ImportValue sls-pypi-cf-resource-providers-UserPoolDomain
         UserPoolId: !Ref CognitoUserPool
-        Domain: ${self:provider.environment.COGNITO_DOMAIN}
+        Domain: ${self:provider.custom.COGNITO_DOMAIN}
 
     # Identity Pool
     CognitoIdentityPool:
       Type: AWS::Cognito::IdentityPool
       Properties :
         AllowUnauthenticatedIdentities : false
-        IdentityPoolName : ${self:provider.environment.COGNITO_IDENTITY_POOL}
+        IdentityPoolName : ${self:provider.custom.COGNITO_IDENTITY_POOL}
         CognitoIdentityProviders :
           - ClientId : !Ref CognitoAppClient
             ProviderName : !GetAtt CognitoUserPool.ProviderName
@@ -243,19 +256,19 @@ resources:
     SetsSNSTopic:
       Type: AWS::SNS::Topic
       Properties:
-        TopicName: ${self:provider.environment.SNS_TOPIC_NAME}
+        TopicName: ${self:provider.custom.SNS_TOPIC_NAME}
 
     # Internal bucket for templates
     TemplateS3Bucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: ${self:provider.environment.TEMPLATE_BUCKET_NAME}
+        BucketName: ${self:provider.custom.TEMPLATE_BUCKET_NAME}
 
     # Internal bucket for Athena query results
     QresultsS3Bucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: ${self:provider.environment.QUERY_RESULTS_BUCKET_NAME}
+        BucketName: ${self:provider.custom.QUERY_RESULTS_BUCKET_NAME}
 
     # Athena database
     AthenaDB:
@@ -263,7 +276,7 @@ resources:
       Properties:
         CatalogId: !Ref AWS::AccountId
         DatabaseInput:
-          Name: ${self:provider.environment.ATHENA_DB_NAME}
+          Name: ${self:provider.custom.ATHENA_DB_NAME}
           Description: Athena database for ${self:service}-${opt:stage, self:provider.stage}
 
     # Athena Table for CloudFront logdata
@@ -274,7 +287,7 @@ resources:
         CatalogId: !Ref AWS::AccountId
         DatabaseName: !Ref AthenaDB
         TableInput:
-          Name: ${self:provider.environment.ATHENA_TABLE_NAME}
+          Name: ${self:provider.custom.ATHENA_TABLE_NAME}
           Description: Define table for CloudFront log data
           TableType: EXTERNAL_TABLE
           Parameters:
@@ -341,3 +354,51 @@ resources:
                 field.delim: "\t"
               SerializationLibrary: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             StoredAsSubDirectories: 'false'
+
+    # Custom role for the athenaquery function
+    athenaqueryRole:
+        Type: AWS::IAM::Role
+        Properties:
+          RoleName: athenaqueryRole # required if you want to use 'serverless deploy --function' later on
+          AssumeRolePolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Principal:
+                  Service:
+                    - lambda.amazonaws.com
+                Action: sts:AssumeRole
+          Policies:
+            - PolicyName: athenaQueryExecution
+              PolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                  - Effect: Allow
+                    Action:
+                      - athena:StartQueryExecution
+                      - athena:GetQueryExecution
+                    Resource: arn:aws:athena:${opt:region, self:provider.region}:*:workgroup/primary
+                  - Effect: Allow
+                    Action:
+                      - s3:GetBucketLocation
+                      - s3:GetObject
+                      - s3:ListBucket
+                      - s3:ListBucketMultipartUploads
+                      - s3:ListMultipartUploadParts
+                      - s3:AbortMultipartUpload
+                      - s3:PutObject
+                    Resource: "*"
+                  - Effect: Allow
+                    Action:
+                      - glue:GetTable
+                      - glue:GetDatabase
+                    Resource: arn:aws:glue:${opt:region, self:provider.region}:*:database/${self:provider.custom.ATHENA_DB_NAME}
+                  - Effect: Allow
+                    Action:
+                      - glue:GetTable
+                      - glue:GetDatabase
+                    Resource: arn:aws:glue:${opt:region, self:provider.region}:*:catalog
+                  - Effect: Allow
+                    Action:
+                      - glue:GetTable
+                    Resource: arn:aws:glue:${opt:region, self:provider.region}:*:table/${self:provider.custom.ATHENA_DB_NAME}/${self:provider.custom.ATHENA_TABLE_NAME}
