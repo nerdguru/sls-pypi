@@ -26,3 +26,5 @@
   1 hr  - 7/22 Preliminary Athena research, which is mega cool
 1.5 hrs - 7/24 Athena CloudFormation setup, DB working, table next
   2 hrs - 7/30 Table working, query-able
+  5 hrs - 8/1 Code for querying Athena working
+  2 hrs - 8/2 Code for pulling package names from Dynamo and publishing to topics
