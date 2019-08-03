@@ -2,7 +2,7 @@ import os
 import boto3
 import time
 
-def athenaquery(event, context):
+def athenaQuery(event, context):
     # Echo inputs
     print('Package: ' + event['Records'][0]['Sns']['Message'])
     print('QUERY_RESULTS_BUCKET_NAME: ' + os.environ['QUERY_RESULTS_BUCKET_NAME'])

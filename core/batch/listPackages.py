@@ -1,6 +1,5 @@
 import os
 import boto3
-import json
 
 def listPackages(event, context):
     # Echo inputs

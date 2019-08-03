@@ -7,29 +7,20 @@ plugins:
 
 provider:
   name: aws
-  runtime: python2.7
+  runtime: python3.6
   custom:
-    DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+    PACKAGES_DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}-packages
+    WEB_DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}-web
     COGNITO_USER_POOL: ${self:service}-${opt:stage, self:provider.stage}
     COGNITO_DOMAIN: ${self:service}-${opt:stage, self:provider.stage}
     COGNITO_IDENTITY_POOL: slspypi${opt:stage, self:provider.stage}
     WEB_BUCKET_NAME: ${self:service}-${opt:stage, self:provider.stage}-web
     TEMPLATE_BUCKET_NAME: ${self:service}-${opt:stage, self:provider.stage}-templ
     QUERY_RESULTS_BUCKET_NAME: ${self:service}-${opt:stage, self:provider.stage}-qres
-    SNS_TOPIC_NAME: ${self:service}-${opt:stage, self:provider.stage}
     ATHENA_DB_NAME: ${self:service}-${opt:stage, self:provider.stage}
     ATHENA_TABLE_NAME: ${self:service}-${opt:stage, self:provider.stage}-cf-table
     ATHENA_TOPIC: ${self:service}-${opt:stage, self:provider.stage}-cf-topic
-  iamRoleStatements:
-    - Effect: Allow
-      Action:
-        - dynamodb:Query
-        - dynamodb:Scan
-        - dynamodb:GetItem
-        - dynamodb:PutItem
-        - dynamodb:UpdateItem
-        - dynamodb:DeleteItem
-      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.custom.DYNAMODB_TABLE}"
+    WEB_TOPIC: ${self:service}-${opt:stage, self:provider.stage}-web-topic
 
 # Plugin settings to sync files in the correct buckets
 # Per https://github.com/k1LoW/serverless-s3-sync
@@ -41,49 +32,49 @@ custom:
 functions:
 # API Functions
   create:
-    handler: sets/create.create
+    handler: packages/create.create
     events:
       - http:
-          path: sets
+          path: packages
           method: post
           cors: true
 
   list:
-    handler: sets/list.list
+    handler: packages/list.list
     events:
       - http:
-          path: sets
+          path: packages
           method: get
           cors: true
 
   get:
-    handler: sets/get.get
+    handler: packages/get.get
     events:
       - http:
-          path: sets/{id}
+          path: packages/{id}
           method: get
           cors: true
 
   update:
-    handler: sets/update.update
+    handler: packages/update.update
     events:
       - http:
-          path: sets/{id}
+          path: packages/{id}
           method: put
           cors: true
 
   delete:
-    handler: sets/delete.delete
+    handler: packages/delete.delete
     events:
       - http:
-          path: sets/{id}
+          path: packages/{id}
           method: delete
           cors: true
 
 # Batch Functions
-  athenaquery:
-    handler: batch/athenaquery.athenaquery
-    role: athenaqueryRole
+  athenaQuery:
+    handler: batch/athenaQuery.athenaQuery
+    role: athenaQueryRole
     timeout: 600
     environment:
       QUERY_RESULTS_BUCKET_NAME: ${self:provider.custom.QUERY_RESULTS_BUCKET_NAME}
@@ -95,13 +86,77 @@ functions:
           topicName: ${self:provider.custom.ATHENA_TOPIC}
           displayName: Triggers Athena queries of CloudFront logs
 
+  listPackages:
+    handler: batch/listPackages.listPackages
+    role: listPackagesRole
+    timeout: 600
+    environment:
+      PACKAGES_DYNAMODB_TABLE: ${self:provider.custom.PACKAGES_DYNAMODB_TABLE}
+      ATHENA_TOPIC_ARN:
+        Fn::Join:
+          - ':'
+          - - 'arn:aws:sns'
+            - Ref: 'AWS::Region'
+            - Ref: 'AWS::AccountId'
+            - ${self:provider.custom.ATHENA_TOPIC}
+
+  webProcess:
+    handler: batch/webProcess.webProcess
+    role: webProcessRole
+    timeout: 600
+    environment:
+      TEMPLATES_BUCKET_NAME: !ImportValue sls-pypi-certificate-TemplatesDomain
+      WEB_BUCKET_NAME: !ImportValue sls-pypi-certificate-WebDomain
+      PACKAGES_DYNAMODB_TABLE: ${self:provider.custom.PACKAGES_DYNAMODB_TABLE}
+    events:
+      - sns:
+          topicName: ${self:provider.custom.WEB_TOPIC}
+          displayName: Triggers processing of static package web pages
+
+  writeWebLogs:
+    handler: batch/writeWebLogs.writeWebLogs
+    role: writeWebLogsRole
+    timeout: 600
+    environment:
+      WEB_DYNAMODB_TABLE: ${self:provider.custom.WEB_DYNAMODB_TABLE}
+      WEB_TOPIC_ARN:
+        Fn::Join:
+          - ':'
+          - - 'arn:aws:sns'
+            - Ref: 'AWS::Region'
+            - Ref: 'AWS::AccountId'
+            - ${self:provider.custom.WEB_TOPIC}
+    events:
+      - s3:
+          existing: true
+          bucket: ${self:provider.custom.QUERY_RESULTS_BUCKET_NAME}
+          rules:
+            - suffix: .csv
+          event: s3:ObjectCreated:*
+
 resources:
   # CloudFormation yml for dependent services
   Resources:
 
-    # Dynamo Table for X
-    # Uses an environment variable for the table name
-    setsDynamoDbTable:
+    # Dynamo Table for packages
+    packagesDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: package
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: package
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.custom.PACKAGES_DYNAMODB_TABLE}
+
+    # Dynamo Table for web logs
+    webLogDbTable:
       Type: 'AWS::DynamoDB::Table'
       Properties:
         AttributeDefinitions:
@@ -115,7 +170,7 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-        TableName: ${self:provider.custom.DYNAMODB_TABLE}
+        TableName: ${self:provider.custom.WEB_DYNAMODB_TABLE}
 
     # Cognito User Pool
     # Uses an enironment variable for the pool name
@@ -252,12 +307,6 @@ resources:
           authenticated: !GetAtt CognitoAuthorizedRole.Arn
           unauthenticated: !GetAtt CognitoUnAuthorizedRole.Arn
 
-    # SNS Topic used to manange batch processing
-    SetsSNSTopic:
-      Type: AWS::SNS::Topic
-      Properties:
-        TopicName: ${self:provider.custom.SNS_TOPIC_NAME}
-
     # Internal bucket for templates
     TemplateS3Bucket:
       Type: AWS::S3::Bucket
@@ -279,7 +328,7 @@ resources:
           Name: ${self:provider.custom.ATHENA_DB_NAME}
           Description: Athena database for ${self:service}-${opt:stage, self:provider.stage}
 
-    # Athena Table for CloudFront logdata
+    # Athena Table for CloudFront log data
     AthenaCFtable:
       DependsOn: AthenaDB
       Type: AWS::Glue::Table
@@ -355,11 +404,11 @@ resources:
               SerializationLibrary: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             StoredAsSubDirectories: 'false'
 
-    # Custom role for the athenaquery function
-    athenaqueryRole:
+    # Custom role for the athenaQuery function
+    athenaQueryRole:
         Type: AWS::IAM::Role
         Properties:
-          RoleName: athenaqueryRole # required if you want to use 'serverless deploy --function' later on
+          RoleName: athenaQueryRole
           AssumeRolePolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -402,3 +451,160 @@ resources:
                     Action:
                       - glue:GetTable
                     Resource: arn:aws:glue:${opt:region, self:provider.region}:*:table/${self:provider.custom.ATHENA_DB_NAME}/${self:provider.custom.ATHENA_TABLE_NAME}
+                  - Effect: Allow # note that these rights are given in the default policy and are required if you want logs out of your lambda(s)
+                    Action:
+                      - logs:CreateLogGroup
+                      - logs:CreateLogStream
+                      - logs:PutLogEvents
+                    Resource:
+                      - 'Fn::Join':
+                        - ':'
+                        -
+                          - 'arn:aws:logs'
+                          - Ref: 'AWS::Region'
+                          - Ref: 'AWS::AccountId'
+                          - 'log-group:/aws/lambda/*:*:*'
+    # Custom role for the listPackages function
+    listPackagesRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: listPackagesRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: listPackagesExecution
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - dynamodb:Query
+                    - dynamodb:Scan
+                    - dynamodb:GetItem
+                  Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.custom.PACKAGES_DYNAMODB_TABLE}"
+                - Effect: Allow
+                  Action:
+                    - SNS:Publish
+                  Resource:
+                    Fn::Join:
+                      - ':'
+                      - - 'arn:aws:sns'
+                        - Ref: 'AWS::Region'
+                        - Ref: 'AWS::AccountId'
+                        - ${self:provider.custom.ATHENA_TOPIC}
+                - Effect: Allow # note that these rights are given in the default policy and are required if you want logs out of your lambda(s)
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource:
+                    - 'Fn::Join':
+                      - ':'
+                      -
+                        - 'arn:aws:logs'
+                        - Ref: 'AWS::Region'
+                        - Ref: 'AWS::AccountId'
+                        - 'log-group:/aws/lambda/*:*:*'
+
+    # Custom role for the webProcess function
+    webProcessRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: webProcessRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: webProcessExecution
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - s3:PutObject
+                    - s3:ListBucket
+                  Resource:
+                    Fn::Join:
+                      - ':'
+                      - - 'arn:aws:s3::'
+                        - !ImportValue sls-pypi-certificate-WebDomain
+                - Effect: Allow # note that these rights are given in the default policy and are required if you want logs out of your lambda(s)
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource:
+                    - 'Fn::Join':
+                      - ':'
+                      -
+                        - 'arn:aws:logs'
+                        - Ref: 'AWS::Region'
+                        - Ref: 'AWS::AccountId'
+                        - 'log-group:/aws/lambda/*:*:*'
+
+    # Custom role for the writeWebLogs function
+    writeWebLogsRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: writeWebLogsRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: writeWebLogsExecution
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - dynamodb:PutItem
+                    - dynamodb:UpdateItem
+                    - dynamodb:DeleteItem
+                  Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.custom.WEB_DYNAMODB_TABLE}"
+                - Effect: Allow
+                  Action:
+                    - SNS:Publish
+                  Resource:
+                    Fn::Join:
+                      - ':'
+                      - - 'arn:aws:sns'
+                        - Ref: 'AWS::Region'
+                        - Ref: 'AWS::AccountId'
+                        - ${self:provider.custom.WEB_TOPIC}
+                - Effect: Allow
+                  Action:
+                    - s3:ListBucket
+                  Resource: arn:aws:s3:::${self:provider.custom.QUERY_RESULTS_BUCKET_NAME}
+                - Effect: Allow
+                  Action:
+                    - s3:GetObject
+                  Resource: arn:aws:s3:::${self:provider.custom.QUERY_RESULTS_BUCKET_NAME}/*
+                - Effect: Allow # note that these rights are given in the default policy and are required if you want logs out of your lambda(s)
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource:
+                    - 'Fn::Join':
+                      - ':'
+                      -
+                        - 'arn:aws:logs'
+                        - Ref: 'AWS::Region'
+                        - Ref: 'AWS::AccountId'
+                        - 'log-group:/aws/lambda/*:*:*'
