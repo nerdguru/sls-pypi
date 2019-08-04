@@ -45,10 +45,12 @@ def athenaQuery(event, context):
             state = response['QueryExecution']['Status']['State']
             print('Query ' + execution_id + ' state: ' + state)
             if state == 'FAILED':
-                print('Failed!  Error handling here')
+                print('Failed query state, check Athena history')
+                raise Exception('Failed query state, check Athena history')
         time.sleep(1)
 
     if(max_execution == 0):
-        print('Failed!  Error handling here')
+        print('Function internal timeout threshold exceeded')
+        raise Exception('Function internal timeout threshold exceeded')
 
     return
