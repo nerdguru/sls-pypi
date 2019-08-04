@@ -430,13 +430,34 @@ resources:
                   - Effect: Allow
                     Action:
                       - s3:GetBucketLocation
-                      - s3:GetObject
                       - s3:ListBucket
                       - s3:ListBucketMultipartUploads
+                    Resource: arn:aws:s3:::${self:provider.custom.QUERY_RESULTS_BUCKET_NAME}
+                  - Effect: Allow
+                    Action:
+                      - s3:PutObject
+                    Resource: arn:aws:s3:::${self:provider.custom.QUERY_RESULTS_BUCKET_NAME}/*
+                  - Effect: Allow
+                    Action:
+                      - s3:GetBucketLocation
+                      - s3:ListBucket
+                      - s3:ListBucketMultipartUploads
+                    Resource:
+                      Fn::Join:
+                        - ''
+                        - - 'arn:aws:s3:::'
+                          - !ImportValue sls-pypi-certificate-LogDomain
+                  - Effect: Allow
+                    Action:
+                      - s3:GetObject
                       - s3:ListMultipartUploadParts
                       - s3:AbortMultipartUpload
-                      - s3:PutObject
-                    Resource: "*"
+                    Resource:
+                      Fn::Join:
+                        - ''
+                        - - 'arn:aws:s3:::'
+                          - !ImportValue sls-pypi-certificate-LogDomain
+                          - '/*'
                   - Effect: Allow
                     Action:
                       - glue:GetTable

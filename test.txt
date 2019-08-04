@@ -57,12 +57,65 @@ and then test the pip:
 
 source cust/bin/activate
 
-pip install --upgrade example-pkg-petecj2 --extra-index-url https://dzn6zorymk4w7.cloudfront.net
+pip install --upgrade example-pkg-petecj2 --extra-index-url https://d3iozc0jc2ftou.cloudfront.net
 
 Will find it in:
-/lib/python2.7/site-packages/
+cust/lib/python2.7/site-packages/
 
 If I can glue these two together (and add CloudFront logging), it should be a matter of:
 
 1) Deploy custom CloudFormation functions for Cognito and Certs (assuming I can combine them)
 2) sls deploy (assumning I can combine the two CF templates used above with what I already have)
+
+
+
+
+$ aws cognito-idp sign-up \
+  --region us-east-1 \
+  --client-id 3c09slmmerp6oovdgn3nevrgr3 \
+  --username admin@example.com \
+  --password Passw0rd!
+
+
+For Cognito hosted login:
+	https://sls-pypi-dev.auth.us-east-1.amazoncognito.com/login?response_type=code&client_id=6naibq496jldrkb8bk42k6ostu&redirect_uri=https://www.amazon.com
+
+For Oauth hosted login:
+https://sls-pypi-dev.auth.us-east-1.amazoncognito.com/oauth2/authorize?response_type=code&client_id=6naibq496jldrkb8bk42k6ostu
+https://sls-pypi-dev.auth.us-east-1.amazoncognito.com/oauth2/authorize?response_type=token&client_id=6naibq496jldrkb8bk42k6ostu
+
+
+Figured out the invalid_client:
+https://stackoverflow.com/questions/53216244/simple-cognito-user-authentication-with-code-grant-not-working
+But now get an invalid_grant
+
+?code=0b3f226f1de6b1fe5972&
+state=ZXlKMWMyVnlVRzl2YkVsa0lqb2lkWE10WldGemRDMHhYMmxVU0VzeFMxVXpXU0lzSW5CeWIzWnBaR1Z5VG1GdFpTSTZJa2RwZEVoMVlpSXNJbU5zYVdWdWRFbGtJam9pTm01aGFXSnhORGsyYW14a2NtdGlPR0pyTkRKck5tOXpkSFVpTENKeVpXUnBjbVZqZEZWU1NTSTZJbWgwZEhCek9pOHZibVZ5WkdkMWNuVXVibVYwSWl3aWNtVnpjRzl1YzJWVWVYQmxJam9pWTI5a1pTSXNJbkJ5YjNacFpHVnlWSGx3WlNJNklrOUpSRU1pTENKelkyOXdaWE1pT2xzaWIzQmxibWxrSWwwc0luTjBZWFJsSWpwdWRXeHNMQ0pqYjJSbFEyaGhiR3hsYm1kbElqcHVkV3hzTENKamIyUmxRMmhoYkd4bGJtZGxUV1YwYUc5a0lqcHVkV3hzTENKdWIyNWpaU0k2SWxKa2QwNVdOa2RwYzJWdk5tTkhZVjg1VlhaUlVqWlVibWxaV1RKaFNHWklMVXB3Y0cxSGJGWXdRMFozTVROVFNqRk5SazEyZGsxQlNEVXdMVmxZTlhobWJFaEdjRXMwTFRKUlUxTTNTVlpaV0dzNE9HbGtlbGxLY1MxSmFYazBhR1JLU2twT09GUjNjV2xOWlZoM1FreFdkWE4wYkZRelRsQnViR0pMY1Zob2FtcFFRbXgxVVVoM1lXMXFRelpLY2taWFRXRmhRamgzWVhOd09HUTFlWE53TjBoV01FTnRhWEI2TUNJc0luTmxjblpsY2todmMzUlFiM0owSWpvaWMyeHpMWEI1Y0drdFpHVjJMbUYxZEdndWRYTXRaV0Z6ZEMweExtRnRZWHB2Ym1OdloyNXBkRzh1WTI5dElpd2lZM0psWVhScGIyNVVhVzFsVTJWamIyNWtjeUk2TVRVMk16TTVORFUwTWl3aWMyVnpjMmx2YmlJNmJuVnNiQ3dpZFhObGNrRjBkSEpwWW5WMFpYTWlPbTUxYkd3c0ltbHpVM1JoZEdWR2IzSk1hVzVyYVc1blUyVnpjMmx2YmlJNlptRnNjMlY5OlFudkNxWlZobWx6ZHJsb0VEVVlkKzJUQ01qMVIzY3A0STA0M1M4UXRGM2s9
+
+
+curl -d "grant_type=authorization_code&client_id=365p4kf11vpu2q84kpeoppiv4i&redirect_uri=https%3A%2F%2Fpypi.nerdguru.net&code=b5432a9405c9e5f5e738" -H "Content-Type: application/x-www-form-urlencoded" -X POST https://sls-pypi-dev.auth.us-east-1.amazoncognito.com/oauth2/token
+
+## Usage
+First, make sure you have setuptools and wheel installed:
+
+```
+pip install setuptools wheel
+```
+then you can build the package with:
+```
+python3 setup.py sdist bdist_wheel
+```
+
+
+OpenWeather API key: 13a14fad7084fe224c4c511ea1b94030
+s3pypi --bucket pypi.nerdguru.net
+
+pip install samples201 --extra-index-url https://pypi.nerdguru.net
+
+https://python-packaging.readthedocs.io/en/latest/minimal.html
+
+
+aws cloudformation create-stack \
+	--capabilities CAPABILITY_NAMED_IAM \
+	--stack-name sls-pypi-athena \
+	--template-body file://scratch/athena.yaml
