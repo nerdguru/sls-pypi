@@ -30,3 +30,6 @@
   2 hrs - 8/2 Code for pulling package names from Dynamo and publishing to topics
   4 hrs - 8/3 Code for writing log data to Dynamo
 0.5 hrs - 8/4 Fixed narrowed permissions on athenaQuery
+0.5 hrs - 8/4 started dynamoPackages but stuck on trigger specifics
+  2 hr  - 8/5 Dynamo trigger issues still with automating trigger, manually yes
+  1 hr  - 8/6 Figuring out Dynamo trigger issues but may have stale streams
