@@ -100,6 +100,9 @@ functions:
             - Ref: 'AWS::Region'
             - Ref: 'AWS::AccountId'
             - ${self:provider.custom.ATHENA_TOPIC}
+    events:
+      # Invoke Lambda function every night at midnight
+      - schedule: cron(0 0 * * ? *)
 
   webProcess:
     handler: batch/webProcess.webProcess
@@ -173,6 +176,18 @@ functions:
         enabled: true
         arn:
           Fn::GetAtt: [packagesDbTable, StreamArn]
+
+    webRoot:
+      handler: batch/webRoot.webRoot
+      role: webRootRole
+      timeout: 600
+      environment:
+        TEMPLATES_BUCKET_NAME: !ImportValue sls-pypi-certificate-TemplatesDomain
+        WEB_BUCKET_NAME: !ImportValue sls-pypi-certificate-WebDomain
+        PACKAGES_DYNAMODB_TABLE: ${self:provider.custom.PACKAGES_DYNAMODB_TABLE}
+      events:
+        # Invoke Lambda function every night at 1a
+        - schedule: cron(0 1 * * ? *)
 
 resources:
   # CloudFormation yml for dependent services
@@ -759,6 +774,47 @@ resources:
                         - Ref: 'AWS::Region'
                         - Ref: 'AWS::AccountId'
                         - ${self:provider.custom.REMOVE_WEB_TOPIC}
+                - Effect: Allow # note that these rights are given in the default policy and are required if you want logs out of your lambda(s)
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource:
+                    - 'Fn::Join':
+                      - ':'
+                      -
+                        - 'arn:aws:logs'
+                        - Ref: 'AWS::Region'
+                        - Ref: 'AWS::AccountId'
+                        - 'log-group:/aws/lambda/*:*:*'
+
+    # Custom role for the webProcess function
+    webRootRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: webRootRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: webRootExecution
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - s3:PutObject
+                    - s3:ListBucket
+                  Resource:
+                    Fn::Join:
+                      - ':'
+                      - - 'arn:aws:s3::'
+                        - !ImportValue sls-pypi-certificate-WebDomain
                 - Effect: Allow # note that these rights are given in the default policy and are required if you want logs out of your lambda(s)
                   Action:
                     - logs:CreateLogGroup
