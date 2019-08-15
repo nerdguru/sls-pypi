@@ -14,7 +14,6 @@ provider:
     COGNITO_USER_POOL: ${self:service}-${opt:stage, self:provider.stage}
     COGNITO_DOMAIN: ${self:service}-${opt:stage, self:provider.stage}
     COGNITO_IDENTITY_POOL: slspypi${opt:stage, self:provider.stage}
-    WEB_BUCKET_NAME: ${self:service}-${opt:stage, self:provider.stage}-web
     TEMPLATE_BUCKET_NAME: ${self:service}-${opt:stage, self:provider.stage}-templ
     QUERY_RESULTS_BUCKET_NAME: ${self:service}-${opt:stage, self:provider.stage}-qres
     ATHENA_DB_NAME: ${self:service}-${opt:stage, self:provider.stage}
@@ -113,6 +112,8 @@ functions:
       WEB_BUCKET_NAME: !ImportValue sls-pypi-certificate-BaseDomain
       PACKAGES_DYNAMODB_TABLE: ${self:provider.custom.PACKAGES_DYNAMODB_TABLE}
       WEB_DYNAMODB_TABLE: ${self:provider.custom.WEB_DYNAMODB_TABLE}
+      PYPI_BUCKET_NAME: !ImportValue sls-pypi-certificate-PypiDomain
+      FOOTER_TEXT: 'Data from Github and internal usage statistics'
     events:
       - sns:
           topicName: ${self:provider.custom.WEB_TOPIC}
@@ -617,6 +618,14 @@ resources:
             PolicyDocument:
               Version: '2012-10-17'
               Statement:
+                - Effect: Allow
+                  Action:
+                    - s3:ListBucket
+                  Resource:
+                    Fn::Join:
+                      - ''
+                      - - 'arn:aws:s3:::'
+                        - !ImportValue sls-pypi-certificate-PypiDomain
                 - Effect: Allow
                   Action:
                     - dynamodb:Query

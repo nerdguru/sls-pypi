@@ -15,8 +15,10 @@ def webProcess(event, context):
 
     print('TEMPLATES_BUCKET_NAME: ' + os.environ['TEMPLATES_BUCKET_NAME'])
     print('WEB_BUCKET_NAME: ' + os.environ['WEB_BUCKET_NAME'])
+    print('PYPI_BUCKET_NAME: ' + os.environ['PYPI_BUCKET_NAME'])
     print('PACKAGES_DYNAMODB_TABLE: ' + os.environ['PACKAGES_DYNAMODB_TABLE'])
     print('WEB_DYNAMODB_TABLE: ' + os.environ['WEB_DYNAMODB_TABLE'])
+    print('FOOTER_TEXT: ' + os.environ['FOOTER_TEXT'])
     access_token = get_secret('GitHubAccessToken')
     print('Access token: ' + access_token)
     print()
@@ -58,11 +60,25 @@ def webProcess(event, context):
     output = output.replace('DOWNLOADS', str(downloads))
 
     # VERSIONS
-
+    versions_string = ''
+    pypi_bucket = s3.Bucket(os.environ['PYPI_BUCKET_NAME'])
+    for obj in pypi_bucket.objects.filter(Prefix=package):
+        print(obj.key)
+        if obj.key.endswith('.tar.gz'):
+            version = obj.key.replace('.tar.gz','').replace(package + '/' + package + '-','')
+            print(version)
+            if versions_string == '':
+                versions_string += version
+            else:
+                versions_string += ', ' + version
+    output = output.replace('VERSIONS', versions_string)
 
     # GITHUBREPO
     repo_string = '<a href="https://github.com/' + github_name + '" target="_blank">' + github_name + '</a>'
     output = output.replace('GITHUBREPO', repo_string)
+
+    # FOOTERTEXT
+    output = output.replace('FOOTERTEXT', os.environ['FOOTER_TEXT'])
 
     # Write out the results
     print('Find/replace complete, writing: ' + package)
