@@ -8,6 +8,7 @@ The following are requirements for installing Serverless PyPi:
 * [A base domain name registered in Route53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/domain-register.html)
 * [The Serverless Framework installed](https://serverless.com/framework/docs/getting-started/)
 * [An OAuth App created on GitHub](https://developer.github.com/apps/building-oauth-apps/creating-an-oauth-app/)
+* [A GitHub access token](https://github.com/settings/tokens)
 
 The installation requires six steps:
 
@@ -59,9 +60,11 @@ This creates an S3 bucket named "pypi" + <domain name>, a CloudFront distributio
 that fronts the bucket to provide HTTPS and is configured to log access to it,
 and a DNS entry that points to the CloudFront distribution.  Completion time on
 this step varies according to the CloudFront distribution setup, taking 30 minutes or longer.
-## Step 4: Installing the metrics components
+## Step 4: Installing the core components
+sls-pypi core components require a GitHub access token with repo:public_repo and the AWS Systems Manager is used to manage that access token securely.  In order for the deployment process to set that access token, open the `github.template` file in the `core` folder, replace the value so that it contains your access token, and save the result as `github.yml`.  Alternatively, set the key to a bogus value for deployment and after the deployment step below completes, manually set the access token in the AWS Systems Manager console.
+
+Then perform the following in the `core` folder:
 ```
-cd ../metrics
 sls deploy
 ```
 ## Step 5: Installing and Configuring Oauth

@@ -33,3 +33,12 @@
 0.5 hrs - 8/4 started dynamoPackages but stuck on trigger specifics
   2 hr  - 8/5 Dynamo trigger issues still with automating trigger, manually yes
   1 hr  - 8/6 Figuring out Dynamo trigger issues but may have stale streams
+  1 hr  - 8/7 Added cron events to listPackages and added skeleton for webRoot
+  1 hr  - 8/9 Researched layers and secrets management for next phase
+0.5 hrs - 8/14 Implemented a trivial layer correctly based on https://medium.com/@qtangs/creating-new-aws-lambda-layer-for-python-pandas-library-348b126e9f3e
+        - For utilizing https://pygithub.readthedocs.io/en/latest/introduction.html, should be able to make my own layer and use https://serverless.com/blog/serverless-secrets-api-keys/ to authenticate
+0.5 hrs - Set up SSM parameter via CloudFormation
+  1 hr  - Playing with PyGithub but it doesn't deal with dependents/dependencies.  That'll require some screen scraping https://realpython.com/python-web-scraping-practical-introduction/
+  1 hr  - Playing with screen scraping via https://realpython.com/python-web-scraping-practical-introduction/
+2.5 hrs - 8/15 Building local version of the webProcess function.  Everything working save downloads, versions, and README links
+  4 hrs - Building out Lambda version of webProcess

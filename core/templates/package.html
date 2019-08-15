@@ -11,7 +11,11 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-
+    <style>
+    pre {
+        background-color: LightGray; 
+    }
+    </style>
     <title>PACKAGENAME</title>
   </head>
   <body>
@@ -31,41 +35,24 @@
 
         <main role="main" class="container">
           <h2>PACKAGENAME</h2>
-          <p>PACKAGEDESC</p>
+          <code>pip install --extra-index-url https://pypi.SITENAME PACKAGENAME</code>
+          <hr/>
           <div class="row">
             <div class="col-sm-9">
-              <nav>
-      					<div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-      						<a class="nav-item nav-link active" id="nav-readme-tab" data-toggle="tab" href="#nav-readme" role="tab" aria-controls="nav-readme" aria-selected="true">Readme</a>
-      						<a class="nav-item nav-link" id="nav-dependencies-tab" data-toggle="tab" href="#nav-dependencies" role="tab" aria-controls="nav-dependencies" aria-selected="false">DEPS Dependencies</a>
-      						<a class="nav-item nav-link" id="nav-dependents-tab" data-toggle="tab" href="#nav-dependents" role="tab" aria-controls="nav-dependents" aria-selected="false">DEPTS Dependents</a>
-      						<a class="nav-item nav-link" id="nav-versions-tab" data-toggle="tab" href="#nav-versions" role="tab" aria-controls="nav-versions" aria-selected="false">VERS Versions</a>
-      					</div>
-      				</nav>
-      				<div class="tab-content py-3 px-3 px-sm-0" id="nav-tabContent">
-      					<div class="tab-pane fade show active" id="nav-readme" role="tabpanel" aria-labelledby="nav-readme-tab">
-      						README_CONTENT
-      					</div>
-      					<div class="tab-pane fade" id="nav-dependencies" role="tabpanel" aria-labelledby="nav-dependencies-tab">
-      						DEPENDENCIES_CONTENT
-      					</div>
-      					<div class="tab-pane fade" id="nav-dependents" role="tabpanel" aria-labelledby="nav-dependents-tab">
-      						DEPENDENTS_CONTENT
-                </div>
-      					<div class="tab-pane fade" id="nav-versions" role="tabpanel" aria-labelledby="nav-versions-tab">
-      						VERSIONS_CONTENT
-      					</div>
-      				</div>
+      					README_CONTENT
             </div>
             <div class="col-sm-3">
-              <h6>Install<a href="#" data-toggle="tooltip" data-placement="right" title="Assuming you have set extra-index-url in your pip.conf">**</a></h6>
-              <code>pip install PACKAGENAME</code>
-              <hr/>
               <h6>Downloads</h6>
               DOWNLOADS
               <hr/>
-              <h6>Version</h6>
-              VERSION
+              <h6>Versions</h6>
+              VERSIONS
+              <hr/>
+              <h6>Dependents</h6>
+              DEPENDENTS_CONTENT
+              <hr/>
+              <h6>Dependencies</h6>
+              DEPENDENCIES_CONTENT
               <hr/>
               <h6>License</h6>
               LICENSE
