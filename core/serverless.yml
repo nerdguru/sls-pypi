@@ -21,6 +21,16 @@ provider:
     ATHENA_TOPIC: ${self:service}-${opt:stage, self:provider.stage}-cf-topic
     WEB_TOPIC: ${self:service}-${opt:stage, self:provider.stage}-web-topic
     REMOVE_WEB_TOPIC: ${self:service}-${opt:stage, self:provider.stage}-remove-web-topic
+    FOOTER_TEXT: 'Data from Github and internal usage statistics'
+    HEADER_SUBTEXT: 'An alternate Python Package Index'
+
+layers:
+  UIgen:
+    path: layers/uigen
+    name: ${self:service}-uigen
+    description: Preassembled requests, markdown2, BeautifulSoup and others
+    compatibleRuntimes:
+      - python3.6
 
 # Plugin settings to sync files in the correct buckets
 # Per https://github.com/k1LoW/serverless-s3-sync
@@ -113,7 +123,10 @@ functions:
       PACKAGES_DYNAMODB_TABLE: ${self:provider.custom.PACKAGES_DYNAMODB_TABLE}
       WEB_DYNAMODB_TABLE: ${self:provider.custom.WEB_DYNAMODB_TABLE}
       PYPI_BUCKET_NAME: !ImportValue sls-pypi-certificate-PypiDomain
-      FOOTER_TEXT: 'Data from Github and internal usage statistics'
+      FOOTER_TEXT: ${self:provider.custom.FOOTER_TEXT}
+      HEADER_SUBTEXT: ${self:provider.custom.HEADER_SUBTEXT}
+    layers:
+      - {Ref: UIgenLambdaLayer}
     events:
       - sns:
           topicName: ${self:provider.custom.WEB_TOPIC}

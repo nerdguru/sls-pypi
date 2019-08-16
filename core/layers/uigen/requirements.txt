@@ -1,0 +1,4 @@
+PyGithub
+markdown2
+requests
+BeautifulSoup4
