@@ -29,7 +29,7 @@ def webRoot(event, context):
     listC=''
     current_list = 'A'
     for package in package_list:
-        list_item = '<li><a href="/' + item['package'] + '">' + item['package'] + '</a></li>\n'
+        list_item = '<li><a href="/' + package + '">' + package + '</a></li>\n'
         if current_list == 'A':
             listA += list_item
             current_list = 'B'
