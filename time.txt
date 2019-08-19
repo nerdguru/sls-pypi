@@ -42,3 +42,5 @@
   1 hr  - Playing with screen scraping via https://realpython.com/python-web-scraping-practical-introduction/
 2.5 hrs - 8/15 Building local version of the webProcess function.  Everything working save downloads, versions, and README links
   4 hrs - Building out Lambda version of webProcess
+  2 hrs - 8/16 finished webProcess
+  1 hr  - 8/19 Created webRoot HTML template and wrote code to populate the list of packages
