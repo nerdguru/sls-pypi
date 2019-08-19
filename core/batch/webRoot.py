@@ -27,9 +27,11 @@ def webRoot(event, context):
     listA=''
     listB=''
     listC=''
+    search_scripts=''
     current_list = 'A'
     for package in package_list:
         list_item = '<li><a href="/' + package + '">' + package + '</a></li>\n'
+        search_scripts += '<script src="/' + package + '/search.js"></script>\n'
         if current_list == 'A':
             listA += list_item
             current_list = 'B'
@@ -55,6 +57,9 @@ def webRoot(event, context):
     output = output.replace('LISTA', listA)
     output = output.replace('LISTB', listB)
     output = output.replace('LISTC', listC)
+
+    # SEARCHSCRIPTS
+    output = output.replace('SEARCHSCRIPTS', search_scripts)
 
     # FOOTERTEXT
     output = output.replace('FOOTERTEXT', os.environ['FOOTER_TEXT'])

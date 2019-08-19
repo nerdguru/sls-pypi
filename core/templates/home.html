@@ -11,11 +11,7 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-    <style>
-    pre {
-        background-color: LightGray;
-    }
-    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.4.5/fuse.min.js"></script>
     <title>SITENAME</title>
   </head>
   <body>
@@ -24,10 +20,11 @@
     </nav>
 
     <main role="main" class="container">
-      <div class="row">
-          <div class="col-sm-12">
-            <input class="form-control" type="text" placeholder="Search for packages">
-          </div>
+      <div class="row justify-content-md-center">
+        <div class="col-sm-8">
+          <input id="searchBox" class="form-control" type="text" placeholder="Search for packages" oninput="siteSearch()">
+          <div id='results'></div>
+        </div>
       </div>
       </br>
       <h5>Full list of packages</h5>
@@ -55,9 +52,30 @@
 		  </div>
     </main>
     <script>
-    $(document).ready(function () {
-      $('[data-toggle="tooltip"]').tooltip();
-    });
+      var list=[];
+    </script>
+    SEARCHSCRIPTS
+    <script>
+      var options = {
+        shouldSort: true,
+        threshold: 0.6,
+        location: 0,
+        distance: 100,
+        maxPatternLength: 32,
+        minMatchCharLength: 1,
+        keys: ["text"]
+      };
+      var fuse = new Fuse(list, options); // "list" is the item array
+      function siteSearch() {
+        var result = fuse.search(document.getElementById("searchBox").value);
+        console.log(result)
+        result_string = ''
+        for (var i = 0; i < result.length; i++) {
+          console.log(result[i]);
+          result_string = result_string + "<div><a href=\"/" + result[i].package + "\">" + result[i].package + "</a></div>\n"
+      }
+        document.getElementById("results").innerHTML = result_string;
+      }
     </script>
   </body>
 </html>

@@ -44,3 +44,5 @@
   4 hrs - Building out Lambda version of webProcess
   2 hrs - 8/16 finished webProcess
   1 hr  - 8/19 Created webRoot HTML template and wrote code to populate the list of packages
+0.5 hrs - Playing with Fuse IO for search
+  1 hr  - Finished #20

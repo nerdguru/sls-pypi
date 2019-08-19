@@ -176,4 +176,14 @@ def webProcess(event, context):
     out_obj = s3.Object(os.environ['WEB_BUCKET_NAME'], package + '/index.html')
     out_obj.put(Body=output,ContentType='text/html', ACL='public-read')
 
+    # Finally, write a search file
+    print('Writing search file: ' + package)
+    search_text = ''
+    words = md_no_first.split()
+    for x in range(0, 30):
+        search_text += words[x].replace('"','') + ' '
+    search_output = 'list.push({package: "' + package + '",text: "' + search_text + '"})'
+    out_obj = s3.Object(os.environ['WEB_BUCKET_NAME'], package + '/search.js')
+    out_obj.put(Body=search_output,ContentType='text/javascript', ACL='public-read')
+
     return
