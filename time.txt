@@ -45,4 +45,6 @@
   2 hrs - 8/16 finished webProcess
   1 hr  - 8/19 Created webRoot HTML template and wrote code to populate the list of packages
 0.5 hrs - Playing with Fuse IO for search
-  1 hr  - Finished #20
+  1 hr  - Finished #20, cut 3rd video
+  1 hr  - Github calls for List data and early List call
+1.5 hrs - 8/20 Got basic calling structure and UI for List
