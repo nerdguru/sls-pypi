@@ -55,6 +55,7 @@ functions:
     timeout: 600
     environment:
       PACKAGES_DYNAMODB_TABLE: ${self:provider.custom.PACKAGES_DYNAMODB_TABLE}
+      WEB_DYNAMODB_TABLE: ${self:provider.custom.WEB_DYNAMODB_TABLE}
       PYPI_BUCKET_NAME: !ImportValue sls-pypi-certificate-PypiDomain
       USERNAME: 'nerdguru'
     layers:
@@ -203,6 +204,15 @@ functions:
       PYPI_BUCKET_NAME: !ImportValue sls-pypi-certificate-PypiDomain
       FOOTER_TEXT: ${self:provider.custom.FOOTER_TEXT}
       HEADER_SUBTEXT: ${self:provider.custom.HEADER_SUBTEXT}
+      APIG_URL:
+        !Join
+          - ''
+          - - 'https://'
+            - !Ref ApiGatewayRestApi
+            - '.execute-api.'
+            - ${opt:region, self:provider.region}
+            - '.amazonaws.com/'
+            - ${opt:stage, self:provider.stage}
     events:
       # Invoke Lambda function every night at 1a
       - schedule: cron(0 1 * * ? *)
@@ -983,6 +993,12 @@ resources:
                     - dynamodb:Scan
                     - dynamodb:GetItem
                   Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.custom.PACKAGES_DYNAMODB_TABLE}"
+                - Effect: Allow
+                  Action:
+                    - dynamodb:Query
+                    - dynamodb:Scan
+                    - dynamodb:GetItem
+                  Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.custom.WEB_DYNAMODB_TABLE}"
                 - Effect: Allow # note that these rights are given in the default policy and are required if you want logs out of your lambda(s)
                   Action:
                     - ssm:GetParameter

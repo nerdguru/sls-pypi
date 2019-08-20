@@ -11,12 +11,27 @@ def get_secret(key):
 	)
 	return resp['Parameter']['Value']
 
+def removeDuplicates(listofElements):
+
+    # Create an empty list to store unique elements
+    uniqueList = []
+
+    # Iterate over the original list and for each element
+    # add it to uniqueList, if its not already there.
+    for elem in listofElements:
+        if elem not in uniqueList:
+            uniqueList.append(elem)
+
+    # Return the list of unique elements
+    return uniqueList
+
 def list(event, context):
 
     access_token = get_secret('GitHubAccessToken')
     print('Access token: ' + access_token)
     print('PYPI_BUCKET_NAME: ' + os.environ['PYPI_BUCKET_NAME'])
     print('PACKAGES_DYNAMODB_TABLE: ' + os.environ['PACKAGES_DYNAMODB_TABLE'])
+    print('WEB_DYNAMODB_TABLE: ' + os.environ['WEB_DYNAMODB_TABLE'])
     username = os.environ['USERNAME']
     print('Username: ' + username)
     print()
@@ -47,22 +62,42 @@ def list(event, context):
 
 	# Build structure for submitted packages
     submitted_packages=[]
+    package_list.sort()
+    s3 = boto3.resource('s3')
     for item in package_list:
         retItem = {}
         retItem["package"] = item
-        retItem["versions"] = []
+        retItem["versions"]=[]
+        pypi_bucket = s3.Bucket(os.environ['PYPI_BUCKET_NAME'])
+        for obj in pypi_bucket.objects.filter(Prefix=item):
+            print(obj.key)
+            if obj.key.endswith('.tar.gz'):
+                version = obj.key.replace('.tar.gz','').replace(item + '/' + item + '-','')
+                print(version)
+                retItem["versions"].append(version)
+
         retItem["downloads"] = {}
-        retItem["downloads"]["number"] = 0
-        retItem["downloads"]["pops"] = []
-        retItem["downloads"]["sourceIps"] = []
+        web_table = dynamodb.Table(os.environ['WEB_DYNAMODB_TABLE'])
+        web_result = web_table.scan()
+        downloads = 0
+        locations = []
+        requestIPs = []
+        for web_log_item in web_result['Items']:
+            if web_log_item['package'] == item:
+                downloads += 1
+                locations.append(web_log_item['location'])
+                requestIPs.append(web_log_item['requestIP'])
+        retItem["downloads"]["number"] = downloads
+        retItem["downloads"]["locations"] = len(removeDuplicates(locations))
+        retItem["downloads"]["requestIPs"] = len(removeDuplicates(requestIPs))
         submitted_packages.append(retItem)
 
     unsubmitted_packages = []
 
+	# create a response
     retVal = {}
     retVal["submitted"] = submitted_packages
     retVal["unsubmitted"] = unsubmitted_packages
-    # create a response
     response = {
         "statusCode": 200,
 		"headers": { 'Access-Control-Allow-Origin': '*' },
