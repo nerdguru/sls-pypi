@@ -47,4 +47,4 @@
 0.5 hrs - Playing with Fuse IO for search
   1 hr  - Finished #20, cut 3rd video
   1 hr  - Github calls for List data and early List call
-1.5 hrs - 8/20 Got basic calling structure and UI for List
+  3 hrs - 8/20 Got basic calling structure and UI for List with icons
