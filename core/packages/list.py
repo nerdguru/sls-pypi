@@ -92,7 +92,7 @@ def list(event, context):
         retItem["downloads"]["requestIPs"] = len(removeDuplicates(requestIPs))
         submitted_packages.append(retItem)
 
-    unsubmitted_packages = []
+    unsubmitted_packages = ["samples301"]
 
 	# create a response
     retVal = {}
