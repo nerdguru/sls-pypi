@@ -18,20 +18,25 @@ function download(filename, text) {
 }
 
 function csv(package) {
-  // Generate download of hello.txt file with some content
-  console.log('In csv: ' + package);
-  var text = 'hello world ' + package;
-  var filename = package + '.csv';
-  download(filename, text);
+  document.body.style.cursor = 'wait';
+  console.log('Trying: ' + path + '/' + package);
+  $.get(path + '/' + package, function (data) {
+    console.log('Response: ' + data.csv);
+    document.body.style.cursor = 'auto';
+    download(package + '.csv', decodeURIComponent(data.csv));
+  });
+
 }
 
 function list() {
+  document.body.style.cursor = 'wait';
   console.log('Trying: ' + path);
   $.get(path, function (data) {
     console.log('Response: ' + JSON.stringify(data, null, 2));
     packageList = data;
     renderSubmitted();
     renderUnsubmitted();
+    document.body.style.cursor = 'auto';
   });
 }
 
