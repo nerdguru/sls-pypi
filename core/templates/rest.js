@@ -28,6 +28,36 @@ function csv(package) {
 
 }
 
+function confirmRemove(package) {
+  var r = confirm('Are you sure you would like to remove ' +
+    package + ' from this Python package index?');
+  if (r == true) {
+    console.log('OK to remove ' + package);
+  } else {
+    console.log('Cancelled removeal of ' + package);
+  }
+}
+
+function confirmUpdate(package) {
+  var r = confirm('Are you sure you would like to update ' +
+    package + ' on this Python package index?');
+  if (r == true) {
+    console.log('OK to update ' + package);
+  } else {
+    console.log('Cancelled update of ' + package);
+  }
+}
+
+function confirmSubmit(package) {
+  var r = confirm('Are you sure you would like to submit ' +
+    package + ' on this Python package index?');
+  if (r == true) {
+    console.log('OK to submit ' + package);
+  } else {
+    console.log('Cancelled submittal of ' + package);
+  }
+}
+
 function list() {
   document.body.style.cursor = 'wait';
   console.log('Trying: ' + path);
@@ -72,9 +102,11 @@ function renderSubmitted() {
     messageString += '<td>' + packageList.submitted[i].downloads.locations + '</td>';
     messageString += '<td>' + packageList.submitted[i].downloads.requestIPs + '</td>';
     messageString += '<td>';
-    messageString += '<button type="button" class="btn btn-secondary btn-sm">';
+    messageString += '<button type="button" class="btn btn-secondary btn-sm"';
+    messageString += 'id="update-' + packageList.submitted[i].package + '">';
     messageString += '<i class="fa fa-wrench" aria-hidden="true"></i> Update</button> ';
-    messageString += '<button type="button" class="btn btn-danger btn-sm">';
+    messageString += '<button type="button" class="btn btn-danger btn-sm"';
+    messageString += 'id="remove-' + packageList.submitted[i].package + '">';
     messageString += '<i class="fa fa-times" aria-hidden="true"></i> Remove</button>';
     messageString += '</td>';
     messageString += '</tr>';
@@ -84,10 +116,23 @@ function renderSubmitted() {
 
   for (var i = 0; i < packageList.submitted.length; i++) {
     console.log('Event listener: ' + packageList.submitted[i].package);
+
     document.getElementById('download-' + packageList.submitted[i].package).
       addEventListener('click', function (event) {
           console.log(event.target.id);
           csv(event.target.id.replace('download-', ''));
+        }, false);
+
+    document.getElementById('remove-' + packageList.submitted[i].package).
+      addEventListener('click', function (event) {
+          console.log(event.target.id);
+          confirmRemove(event.target.id.replace('remove-', ''));
+        }, false);
+
+    document.getElementById('update-' + packageList.submitted[i].package).
+      addEventListener('click', function (event) {
+          console.log(event.target.id);
+          confirmUpdate(event.target.id.replace('update-', ''));
         }, false);
   }
 }
@@ -104,13 +149,23 @@ function renderUnsubmitted() {
     messageString += '</a>';
     messageString += '</td>';
     messageString += '<td>';
-    messageString += '<button type="button" class="btn btn-primary btn-sm">';
+    messageString += '<button type="button" class="btn btn-primary btn-sm"';
+    messageString += 'id="submit-' + packageList.unsubmitted[i] + '">';
     messageString += '<i class="fa fa-paper-plane-o" aria-hidden="true"></i> Submit</button> ';
     messageString += '</td>';
     messageString += '</tr>';
   }
 
   document.getElementById('unsubmitted').innerHTML = messageString;
+
+  for (var i = 0; i < packageList.unsubmitted.length; i++) {
+    console.log('Event listener: ' + packageList.unsubmitted[i]);
+    document.getElementById('submit-' + packageList.unsubmitted[i]).
+      addEventListener('click', function (event) {
+          console.log(event.target.id);
+          confirmSubmit(event.target.id.replace('submit-', ''));
+        }, false);
+  }
 }
 
 list();

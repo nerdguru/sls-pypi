@@ -49,3 +49,4 @@
   1 hr  - Github calls for List data and early List call
   4 hrs - 8/20 Got basic calling structure and UI for List with icons
   2 hr  - New CSV function working and downloading through the HTML page
+0.5 hrs - Confirm modal logic on all three buttons
