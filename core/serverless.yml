@@ -41,11 +41,15 @@ custom:
 
 functions:
 # API Functions
-  create:
-    handler: packages/create.create
+  publish:
+    handler: packages/publish.publish
+    environment:
+      PACKAGES_DYNAMODB_TABLE: ${self:provider.custom.PACKAGES_DYNAMODB_TABLE}
+      PYPI_BUCKET_NAME: !ImportValue sls-pypi-certificate-PypiDomain
+      USERNAME: 'nerdguru'
     events:
       - http:
-          path: packages
+          path: packages/{id}
           method: post
           cors: true
 
@@ -53,9 +57,9 @@ functions:
     handler: packages/list.list
     role: apiListRole
     environment:
+      PYPI_BUCKET_NAME: !ImportValue sls-pypi-certificate-PypiDomain
       PACKAGES_DYNAMODB_TABLE: ${self:provider.custom.PACKAGES_DYNAMODB_TABLE}
       WEB_DYNAMODB_TABLE: ${self:provider.custom.WEB_DYNAMODB_TABLE}
-      PYPI_BUCKET_NAME: !ImportValue sls-pypi-certificate-PypiDomain
       USERNAME: 'nerdguru'
     layers:
       - {Ref: UIgenLambdaLayer}
@@ -75,16 +79,12 @@ functions:
           path: packages/{id}
           method: get
 
-  update:
-    handler: packages/update.update
-    events:
-      - http:
-          path: packages/{id}
-          method: put
-          cors: true
-
   delete:
     handler: packages/delete.delete
+    environment:
+      PACKAGES_DYNAMODB_TABLE: ${self:provider.custom.PACKAGES_DYNAMODB_TABLE}
+      PYPI_BUCKET_NAME: !ImportValue sls-pypi-certificate-PypiDomain
+      USERNAME: 'nerdguru'
     events:
       - http:
           path: packages/{id}

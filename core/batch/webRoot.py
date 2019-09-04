@@ -10,7 +10,7 @@ def webRoot(event, context):
     print('WEB_DYNAMODB_TABLE: ' + os.environ['WEB_DYNAMODB_TABLE'])
     print('FOOTER_TEXT: ' + os.environ['FOOTER_TEXT'])
     print('HEADER_SUBTEXT: ' + os.environ['HEADER_SUBTEXT'])
-    print('APIG_UR: ' + os.environ['APIG_UR'])
+    print('APIG_URL: ' + os.environ['APIG_URL'])
     print()
 
     # Build list of all packages

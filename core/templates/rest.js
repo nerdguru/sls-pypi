@@ -28,11 +28,40 @@ function csv(package) {
 
 }
 
+function remove(id) {
+  document.body.style.cursor = 'wait';
+  console.log('Delete path: ' + path + '/' + id);
+  removeWait = true;
+  $.ajax({
+    url: path + '/' + id,
+    type: 'DELETE',
+    success: function (data) {
+        console.log('Response: ' + JSON.stringify(data, null, 2));
+        document.body.style.cursor = 'auto';
+      },
+  });
+}
+
+function publish(id) {
+  document.body.style.cursor = 'wait';
+  console.log('Post path: ' + path + '/' + id);
+  removeWait = true;
+  $.ajax({
+    url: path + '/' + id,
+    type: 'POST',
+    success: function (data) {
+        console.log('Response: ' + JSON.stringify(data, null, 2));
+        document.body.style.cursor = 'auto';
+      },
+  });
+}
+
 function confirmRemove(package) {
   var r = confirm('Are you sure you would like to remove ' +
     package + ' from this Python package index?');
   if (r == true) {
     console.log('OK to remove ' + package);
+    remove(package);
   } else {
     console.log('Cancelled removeal of ' + package);
   }
@@ -43,6 +72,7 @@ function confirmUpdate(package) {
     package + ' on this Python package index?');
   if (r == true) {
     console.log('OK to update ' + package);
+    publish(package);
   } else {
     console.log('Cancelled update of ' + package);
   }
@@ -53,6 +83,7 @@ function confirmSubmit(package) {
     package + ' on this Python package index?');
   if (r == true) {
     console.log('OK to submit ' + package);
+    publish(package);
   } else {
     console.log('Cancelled submittal of ' + package);
   }
