@@ -50,7 +50,7 @@ def list(event, context):
                     potentials.append(repo.name)
     print(potentials)
 
-    # Get the list of repos matching this authorized
+    # Get the list of repos matching this authorized user
     dynamodb = boto3.resource('dynamodb')
     packages_table = dynamodb.Table(os.environ['PACKAGES_DYNAMODB_TABLE'])
     packages_result = packages_table.scan()
@@ -92,7 +92,16 @@ def list(event, context):
         retItem["downloads"]["requestIPs"] = len(removeDuplicates(requestIPs))
         submitted_packages.append(retItem)
 
-    unsubmitted_packages = ["samples301"]
+	# Build structure for submitted packages
+    unsubmitted_packages = potentials
+    for item in potentials:
+ 	    print(item)
+ 	    matches = False
+
+ 	    for package in submitted_packages:
+ 	        print('Package: ' + package["package"]  + ' Item: ' + item)
+ 	        if package["package"]  == item:
+ 	            unsubmitted_packages.remove(item)
 
 	# create a response
     retVal = {}
