@@ -1,8 +1,6 @@
 import json
 import os
 import boto3
-# dynamodb = boto3.resource('dynamodb')
-
 
 def publish(event, context):
     # data = json.loads(event['body'])
@@ -31,6 +29,17 @@ def publish(event, context):
     print('Username: ' + username)
     print('Id: ' + event['pathParameters']['id'])
     print()
+
+    # Load the package into the pypi bucket
+
+    # Write author/package to database table
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table(os.environ['PACKAGES_DYNAMODB_TABLE'])
+    item = {
+        'package': event['pathParameters']['id'],
+        'author': username,
+    }
+    table.put_item(Item=item)
 
     # create a response
     retVal = {}

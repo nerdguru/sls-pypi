@@ -93,15 +93,17 @@ def list(event, context):
         submitted_packages.append(retItem)
 
 	# Build structure for submitted packages
-    unsubmitted_packages = potentials
+    unsubmitted_packages = []
     for item in potentials:
- 	    print(item)
- 	    matches = False
-
- 	    for package in submitted_packages:
- 	        print('Package: ' + package["package"]  + ' Item: ' + item)
- 	        if package["package"]  == item:
- 	            unsubmitted_packages.remove(item)
+        print(item)
+        matches = False
+        for package in submitted_packages:
+            print('Package: ' + package["package"]  + ' Item: ' + item)
+            if package["package"]  == item:
+                matches = True
+        print(matches)
+        if matches == False:
+             unsubmitted_packages.append(item)
 
 	# create a response
     retVal = {}
