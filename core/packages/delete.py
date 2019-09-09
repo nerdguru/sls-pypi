@@ -3,15 +3,6 @@ import json
 import boto3
 
 def delete(event, context):
-    #table = dynamodb.Table(os.environ['DYNAMODB_TABLE'])
-
-    # delete the todo from the database
-    # dynamodb = boto3.resource('dynamodb')
-    # table.delete_item(
-    #     Key={
-    #         'id': event['pathParameters']['id']
-    #     }
-    # )
 
     print('PACKAGES_DYNAMODB_TABLE: ' + os.environ['PACKAGES_DYNAMODB_TABLE'])
     print('PYPI_BUCKET_NAME: ' + os.environ['PYPI_BUCKET_NAME'])
@@ -19,6 +10,22 @@ def delete(event, context):
     print('Username: ' + username)
     print('Id: ' + event['pathParameters']['id'])
     print()
+
+    # Remove pypi assets for this package
+    s3 = boto3.resource('s3')
+    bucket = s3.Bucket(os.environ['PYPI_BUCKET_NAME'])
+    for key in bucket.objects.filter(Prefix=event['pathParameters']['id'] + '/'):
+        print(key)
+        key.delete()
+
+    # Remove DynamoDB entry
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table(os.environ['PACKAGES_DYNAMODB_TABLE'])
+    table.delete_item(
+        Key={
+            'package': event['pathParameters']['id']
+        }
+    )
 
     # create a response
     retVal = {}

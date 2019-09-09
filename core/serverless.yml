@@ -1142,7 +1142,7 @@ resources:
                     - dynamodb:Query
                     - dynamodb:Scan
                     - dynamodb:DeleteItem
-                  Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.custom.WEB_DYNAMODB_TABLE}"
+                  Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.custom.PACKAGES_DYNAMODB_TABLE}"
                 - Effect: Allow
                   Action:
                     - s3:ListBucket
