@@ -51,3 +51,4 @@
   2 hr  - New CSV function working and downloading through the HTML page
 0.5 hrs - Confirm modal logic on all three buttons
   1 hr  - 9/3 Plumbing + echo on remove and publish functions
+  1 hr  - 9/9 Finished webRemove

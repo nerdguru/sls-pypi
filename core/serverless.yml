@@ -20,6 +20,7 @@ provider:
     ATHENA_TABLE_NAME: ${self:service}-${opt:stage, self:provider.stage}-cf-table
     ATHENA_TOPIC: ${self:service}-${opt:stage, self:provider.stage}-cf-topic
     WEB_TOPIC: ${self:service}-${opt:stage, self:provider.stage}-web-topic
+    WEB_ROOT_TOPIC: ${self:service}-${opt:stage, self:provider.stage}-web-root-topic
     REMOVE_WEB_TOPIC: ${self:service}-${opt:stage, self:provider.stage}-remove-web-topic
     FOOTER_TEXT: 'Data from Github and internal usage statistics'
     HEADER_SUBTEXT: 'An alternate Python Package Index'
@@ -147,7 +148,14 @@ functions:
     role: webRemoveRole
     timeout: 600
     environment:
-      WEB_BUCKET_NAME: !ImportValue sls-pypi-certificate-WebDomain
+      WEB_BUCKET_NAME: !ImportValue sls-pypi-certificate-BaseDomain
+      WEB_ROOT_TOPIC_ARN:
+        Fn::Join:
+          - ':'
+          - - 'arn:aws:sns'
+            - Ref: 'AWS::Region'
+            - Ref: 'AWS::AccountId'
+            - ${self:provider.custom.WEB_ROOT_TOPIC}
     events:
       - sns:
           topicName: ${self:provider.custom.REMOVE_WEB_TOPIC}
@@ -226,6 +234,9 @@ functions:
     events:
       # Invoke Lambda function every night at 1a
       - schedule: cron(0 1 * * ? *)
+      - sns:
+          topicName: ${self:provider.custom.WEB_ROOT_TOPIC}
+          displayName: Triggers processing of static home web page
 
 resources:
   # CloudFormation yml for dependent services
@@ -739,19 +750,37 @@ resources:
                   - lambda.amazonaws.com
               Action: sts:AssumeRole
         Policies:
-          - PolicyName: webProcessExecution
+          - PolicyName: webRemoveExecution
             PolicyDocument:
               Version: '2012-10-17'
               Statement:
                 - Effect: Allow
                   Action:
-                    - s3:DeleteObject
                     - s3:ListBucket
                   Resource:
                     Fn::Join:
                       - ':'
                       - - 'arn:aws:s3::'
-                        - !ImportValue sls-pypi-certificate-WebDomain
+                        - !ImportValue sls-pypi-certificate-BaseDomain
+                - Effect: Allow
+                  Action:
+                    - s3:DeleteObject
+                  Resource:
+                    Fn::Join:
+                      - ''
+                      - - 'arn:aws:s3:::'
+                        - !ImportValue sls-pypi-certificate-BaseDomain
+                        - '/*'
+                - Effect: Allow
+                  Action:
+                    - SNS:Publish
+                  Resource:
+                    Fn::Join:
+                      - ':'
+                      - - 'arn:aws:sns'
+                        - Ref: 'AWS::Region'
+                        - Ref: 'AWS::AccountId'
+                        - ${self:provider.custom.WEB_ROOT_TOPIC}
                 - Effect: Allow # note that these rights are given in the default policy and are required if you want logs out of your lambda(s)
                   Action:
                     - logs:CreateLogGroup
@@ -985,7 +1014,7 @@ resources:
                   - lambda.amazonaws.com
               Action: sts:AssumeRole
         Policies:
-          - PolicyName: webProcessExecution
+          - PolicyName: apiListExecution
             PolicyDocument:
               Version: '2012-10-17'
               Statement:
@@ -1048,7 +1077,7 @@ resources:
                   - lambda.amazonaws.com
               Action: sts:AssumeRole
         Policies:
-          - PolicyName: webProcessExecution
+          - PolicyName: apiCsvExecution
             PolicyDocument:
               Version: '2012-10-17'
               Statement:
