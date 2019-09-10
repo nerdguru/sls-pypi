@@ -1,0 +1,3 @@
+[console_scripts]
+s3pypi=s3pypi.__main__:main
+

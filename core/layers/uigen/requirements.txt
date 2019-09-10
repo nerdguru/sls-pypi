@@ -2,3 +2,4 @@ PyGithub
 markdown2
 requests
 BeautifulSoup4
+s3pypi

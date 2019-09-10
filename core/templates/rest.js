@@ -38,6 +38,13 @@ function remove(id) {
     success: function (data) {
         console.log('Response: ' + JSON.stringify(data, null, 2));
         document.body.style.cursor = 'auto';
+        list();
+      },
+
+    error: function (data) {
+        console.log('Response: ' + JSON.stringify(data, null, 2));
+        document.body.style.cursor = 'auto';
+        list();
       },
   });
 }
@@ -52,6 +59,13 @@ function publish(id) {
     success: function (data) {
         console.log('Response: ' + JSON.stringify(data, null, 2));
         document.body.style.cursor = 'auto';
+        list();
+      },
+
+    error: function (data) {
+        console.log('Response: ' + JSON.stringify(data, null, 2));
+        document.body.style.cursor = 'auto';
+        list();
       },
   });
 }
