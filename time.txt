@@ -52,4 +52,4 @@
 0.5 hrs - Confirm modal logic on all three buttons
   1 hr  - 9/3 Plumbing + echo on remove and publish functions
 2.5 hr  - 9/9 Finished webRemove, remove, fixed list
-4.5 hr  - 9/10 Scratch got repo download working, scratch pypi publish working, fitting it into a Lambda function
+5.5 hr  - 9/10 Scratch got repo download working, scratch pypi publish working, fitting it into a Lambda function, documentation
