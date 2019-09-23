@@ -1,8 +1,15 @@
-path = 'https://qnuglnxidb.execute-api.us-east-1.amazonaws.com/dev/packages';
-author = 'nerdguru';
-sitename = 'nerdguru.net';
+var path = 'https://qnuglnxidb.execute-api.us-east-1.amazonaws.com/dev/packages';
+var sitename = 'nerdguru.net';
+var clientId = '7vghvvg0t8doha5ahpbqt68po0';
+var appWebDomain = 'gittest.auth.us-west-2.amazoncognito.com';
+var redirectUriSignIn = 'https://pypi.nerdguru.net/git-test/';
+var redirectUriSignOut = 'https://pypi.nerdguru.net/git-logout/';
+var identityProvider = 'githubtest';
+var userPoolId = 'us-west-2_rJzthZzHO';
 
 var packageList;
+var auth;
+var author;
 
 function download(filename, text) {
   var element = document.createElement('a');
@@ -115,6 +122,72 @@ function list() {
   });
 }
 
+function toggleLogin(data) {
+  document.getElementById('loggedIn').style.display = 'block';
+  document.getElementById('logout').style.display = 'block';
+  document.getElementById('loggedOut').style.display = 'none';
+
+  //console.log('In toggleLogin: ' + JSON.stringify(data, null, 2));
+  console.log('In toggleLogin profile ' + data.profile);
+  console.log('In toggleLogin picture ' + data.picture);
+  console.log('In toggleLogin author ' + data.profile.split('/')[3]);
+  author = data.profile.split('/')[3];
+
+  var picString = '<a href="#" data-toggle="tooltip"';
+  picString += ' title="' + author + '">';
+  picString += '<img src="' + data.picture + '" ';
+  picString += 'style="height: 50px;" class="rounded"></a>';
+  document.getElementById('pic').innerHTML = picString;
+  list();
+}
+
+function toggleLogout() {
+  document.getElementById('loggedIn').style.display = 'none';
+  document.getElementById('logout').style.display = 'none';
+  document.getElementById('loggedOut').style.display = 'block';
+}
+
+function initCognitoSDK() {
+  var authData = {
+    ClientId: clientId,
+    AppWebDomain: appWebDomain,
+    TokenScopesArray: ['email', 'openid', 'profile', 'aws.cognito.signin.user.admin'],
+    RedirectUriSignIn: redirectUriSignIn,
+    RedirectUriSignOut: redirectUriSignOut,
+    IdentityProvider: identityProvider,
+    UserPoolId: userPoolId,
+    AdvancedSecurityDataCollectionFlag: false,
+  };
+  var auth = new AmazonCognitoIdentity.CognitoAuth(authData);
+  auth.userhandler = {
+    onSuccess: function (result) {
+      $.ajax({
+        url: 'https://' + auth.getAppWebDomain() + '/oauth2/userInfo',
+        type: 'GET',
+        success: function (data) {
+            console.log('Success Response: ' + JSON.stringify(data, null, 2));
+            toggleLogin(data);
+          },
+
+        error: function (data) {
+            console.log('Error Response: ' + JSON.stringify(data, null, 2));
+          },
+
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('Authorization', 'Bearer ' +
+              auth.getSignInUserSession().getAccessToken().jwtToken);
+          },
+      });
+      toggleLogin();
+    },
+
+    onFailure: function (err) {
+      alert('Error!' + err);
+    },
+  };
+  return auth;
+}
+
 function renderSubmitted() {
   var messageString = '';
   for (var i = 0; i < packageList.submitted.length; i++) {
@@ -213,4 +286,18 @@ function renderUnsubmitted() {
   }
 }
 
-list();
+toggleLogout();
+auth = initCognitoSDK();
+document.getElementById('loggedOut').addEventListener('click', function () {
+      console.log('Attempting login');
+      auth.getSession();
+    });
+
+document.getElementById('loggedIn').addEventListener('click', function () {
+      console.log('Attempting logout');
+      auth.signOut();
+      toggleLogout();
+    });
+
+auth.parseCognitoWebResponse(window.location.href);
+console.log('done with first pass');
