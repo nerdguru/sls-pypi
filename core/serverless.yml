@@ -296,57 +296,6 @@ resources:
           WriteCapacityUnits: 1
         TableName: ${self:provider.custom.WEB_DYNAMODB_TABLE}
 
-    # Cognito User Pool
-    # Uses an enironment variable for the pool name
-    CognitoUserPool:
-      Type: 'AWS::Cognito::UserPool'
-      Properties:
-        UserPoolName : ${self:provider.custom.COGNITO_USER_POOL}
-        UsernameAttributes :
-          - email
-
-    # Cognitio App Client
-    # Uses the same app name as the user pool name
-    # Note: The Ref output from the CognitoUserPool is an input here
-    CognitoAppClient:
-      Type: 'AWS::Cognito::UserPoolClient'
-      Properties:
-        ClientName: ${self:provider.custom.COGNITO_USER_POOL}
-        ExplicitAuthFlows:
-          - ADMIN_NO_SRP_AUTH
-        GenerateSecret: False
-        UserPoolId: !Ref CognitoUserPool
-
-    # Cognito Client Settings
-    # Note: The Ref output from the CognitoUserPool and CognitoAppClient are inputs here
-    # The ServiceToken is the ARN of the associated custom resource handler,
-    # taken from the USER_POOL_CLIENT_SETTINGS environment variable
-    UserPoolClientSettings:
-      Type: 'Custom::CognitoUserPoolClientSettings'
-      Properties:
-        ServiceToken: !ImportValue sls-pypi-cf-resource-providers-UserPoolClientSettings
-        UserPoolId: !Ref CognitoUserPool
-        UserPoolClientId: !Ref CognitoAppClient
-        SupportedIdentityProviders:
-          - COGNITO
-        CallbackURL: 'https://www.amazon.com'
-        LogoutURL: 'https://www.google.com'
-        AllowedOAuthFlowsUserPoolClient: true
-        AllowedOAuthFlows:
-          - code
-        AllowedOAuthScopes:
-          - openid
-
-    # Custom Resource for Domain
-    # The ServiceToken is the ARN of the associated custom resource handler
-    # taken from the USER_POOL_DOMAIN environment variable
-    CognitoUserPoolDomain:
-      Type: 'Custom::CognitoUserPoolDomain'
-      Properties:
-        ServiceToken: !ImportValue sls-pypi-cf-resource-providers-UserPoolDomain
-        UserPoolId: !Ref CognitoUserPool
-        Domain: ${self:provider.custom.COGNITO_DOMAIN}
-
     # Identity Pool
     CognitoIdentityPool:
       Type: AWS::Cognito::IdentityPool

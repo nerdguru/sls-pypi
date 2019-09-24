@@ -11,6 +11,8 @@ Parameters:
   UPCustomProviderZipFileName:
     Type: String
     Default: 'cfn-cognito-user-pools.zip'
+  DomainName:
+    Type: String
 Resources:
   # First set of resources sets up the certificate provider
   LambdaPolicy:
@@ -160,11 +162,17 @@ Resources:
   UserPool:
     Type: 'AWS::Cognito::UserPool'
     Properties:
-      UserPoolName: UserPool
+      UserPoolName: !Join
+        - ''
+        - - 'pypi.'
+          - !Ref DomainName
   UserPoolClient:
     Type: 'AWS::Cognito::UserPoolClient'
     Properties:
-      ClientName: UserPoolClient
+      ClientName: !Join
+        - ''
+        - - 'pypi.'
+          - !Ref DomainName
       GenerateSecret: true
       UserPoolId: !Ref UserPool
   UserPoolClientSettings:
@@ -175,8 +183,16 @@ Resources:
       UserPoolClientId: !Ref UserPoolClient
       SupportedIdentityProviders:
         - COGNITO
-      CallbackURL: 'https://www.amazon.com'
-      LogoutURL: 'https://www.google.com'
+      CallbackURL: !Join
+        - ''
+        - - 'https://pypi.'
+          - !Ref DomainName
+          - '/my'
+      LogoutURL: !Join
+        - ''
+        - - 'https://pypi.'
+          - !Ref DomainName
+          - '/my'
       AllowedOAuthFlowsUserPoolClient: true
       AllowedOAuthFlows:
         - code
@@ -187,7 +203,7 @@ Resources:
     Properties:
       ServiceToken: !GetAtt CloudFormationCognitoUserPoolDomain.Arn
       UserPoolId: !Ref UserPool
-      Domain: 'csco-domain'
+      Domain: 'pypi'
 
 # Output the arn's used as service tokens so they can be used by serverless.yml
 Outputs:
@@ -201,3 +217,40 @@ Outputs:
     Value: !GetAtt CloudFormationCognitoUserPoolDomain.Arn
     Export:
       Name: !Sub "${AWS::StackName}-UserPoolDomain"
+  UserPoolId:
+    Description: UserPool ID
+    Value: !Ref UserPool
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolId"
+  AppId:
+    Description: App ID
+    Value: !Ref UserPoolClient
+    Export:
+      Name: !Sub "${AWS::StackName}-AppId"
+  RedirectUriSignIn:
+    Description: RedirectUriSignIn
+    Value: !Join
+      - ''
+      - - 'https://pypi.'
+        - !Ref DomainName
+        - '/my'
+    Export:
+      Name: !Sub "${AWS::StackName}-RedirectUriSignIn"
+  RedirectUriSignOut:
+    Description: RedirectUriSignOut
+    Value: !Join
+      - ''
+      - - 'https://pypi.'
+        - !Ref DomainName
+        - '/my'
+    Export:
+      Name: !Sub "${AWS::StackName}-RedirectUriSignOut"
+  UserPoolDomainUrl:
+    Description: User domain URL
+    Value: !Join
+      - ''
+      - - 'https://pypi.auth.'
+        - !Ref AWS::Region
+        - '.amazoncognito.com'
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolDomainUrl"

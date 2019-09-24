@@ -12,7 +12,7 @@ The following are requirements for installing Serverless PyPi:
 
 The installation requires six steps:
 
-## Step 1: Installing Custom CloudFormation Resource Providers
+## Step 1: Installing Custom CloudFormation Resource Providers & Create the User Pool
 Not all assets required to operate Serverles Pypi can be created and integrated
 with one another with standard  CloudFormation constructs.  During this step,
 a set of custom CloudFormation Resource Providers will be installed that fill
@@ -27,20 +27,21 @@ aws s3 mb s3://$BUCKET_NAME
 aws s3 cp custom-cf/cfn-certificate-provider-0.2.4.zip s3://$BUCKET_NAME
 aws s3 cp custom-cf/cfn-cognito-user-pools.zip s3://$BUCKET_NAME
 ```
-Then, deploy the custom Resource Providers
+Then, deploy the custom Resource Providers and create the User Pool:
 ```
+read -p "domain name: " DOMAIN_NAME
 aws cloudformation create-stack \
 	--capabilities CAPABILITY_NAMED_IAM \
 	--stack-name sls-pypi-cf-resource-providers \
 	--template-body file://custom-cf/custom-resource-providers.yaml \
-    --parameters ParameterKey=ResourceBucketName,ParameterValue=$BUCKET_NAME
+    --parameters ParameterKey=ResourceBucketName,ParameterValue=$BUCKET_NAME \
+              ParameterKey=DomainName,ParameterValue=$DOMAIN_NAME
 ```
 ## Step 2: Issuing and Validating the HTTPS Certificate
 The command line `pip` client requires communication with any back end index repository via HTTPS, which an S3 bucket acting as a static HTTP server cannot support on its own.  Instead, CloudFront can act as the HTTPS front end provided it has a valid certificate.  This step issues that certificate using AWS Certificate Manager and validates it using the DNS record method.
 
 A prerequisite of this step is that a base domain name is being managed by Route 53.  That base domain name and the Hosted Zone ID referencing it in Route 53 are used below.
 ```
-read -p "domain name: " DOMAIN_NAME
 read -p "hosted zone id: " HOSTED_ZONE
 aws cloudformation create-stack --stack-name sls-pypi-certificate \
 	--template-body file://cf/certificate.yaml \
@@ -60,13 +61,13 @@ This creates an S3 bucket named "pypi" + <domain name>, a CloudFront distributio
 that fronts the bucket to provide HTTPS and is configured to log access to it,
 and a DNS entry that points to the CloudFront distribution.  Completion time on
 this step varies according to the CloudFront distribution setup, taking 30 minutes or longer.
-## Step 4: Installing the core components
+## Step 4: Installing and Configuring Oauth
+
+## Step 5: Installing the core components
 sls-pypi core components require a GitHub access token with repo:public_repo and the AWS Systems Manager is used to manage that access token securely.  In order for the deployment process to set that access token, open the `github.template` file in the `core` folder, replace the value so that it contains your access token, and save the result as `github.yml`.  Alternatively, set the key to a bogus value for deployment and after the deployment step below completes, manually set the access token in the AWS Systems Manager console.
 
 Then perform the following in the `core` folder:
 ```
 sls deploy
 ```
-## Step 5: Installing and Configuring Oauth
-
 ## Step 6: Testing the deployment

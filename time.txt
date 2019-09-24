@@ -56,4 +56,5 @@
         - Cut video #4
   3 hrs - 9/19 Got the Tim example working with a valid login, figured out how to get extended user info
   1 hr  - 9/20 UI makeover start
-2.5 hrs - 9/23 UI makeover middle
+  3 hrs - 9/23 UI makeover middle, + automation
+0.5 hrs - 9/24 Refactored first CloudFormation step to output all needed user pool items
