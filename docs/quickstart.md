@@ -78,7 +78,7 @@ will be needed to set up the GitHub side of the shim, deploy the shim, and then 
 Cognito side of the shim.
 
 ### Step 4a: Create a GitHub OAuth App
-[Follow GitHub's instructions for creating a GitHub OAuth App ](https://developer.github.com/apps/building-oauth-apps/creating-an-oauth-app/).  Note that it needs to be an `OAuth App` not the default `GitHub App` when going into `Developer Settings`.  A `GitHub App` will not work.
+[Follow GitHub's instructions for creating a GitHub OAuth App ](https://developer.github.com/apps/building-oauth-apps/creating-an-oauth-app/).  Give it an application name of `pypi.<your domain>` and an application description of `An independent Python package index`.  Note that it needs to be an `OAuth App` not the default `GitHub App` when going into `Developer Settings`.  A `GitHub App` will not work.
 
 As part of this process, you will be asked for your `Homepage URL` and your `Authorization callback URL`.  
 
@@ -108,15 +108,17 @@ export COGNITO_REDIRECT_URI=# https://<Your Cognito Domain>/oauth2/idpresponse
 export STACK_NAME=sls-pypi-github-cognito-openid-wrapper
 export REGION=# AWS region to deploy the stack and bucket in
 ```
-Under `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`, enter the `client id` and `secret` from the prior sub step.  For the `COGNITO_REDIRECT_URI`, enter the same URL performed in the prior sub step.  For `REGION`, set equal to the AWS region where `sls-pypi` is being deployed.
+Under `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`, enter the `client id` and `secret` from the prior sub step.  For the `COGNITO_REDIRECT_URI`, enter the same URL performed in the prior sub step.  For `REGION`, set equal to the AWS region where `sls-pypi` is being deployed (for example `us-east-1`).
 
-Once saved, deploy the shim with:
+Once your custom `config.sh` is saved, deploy the shim with:
 
 ```
 npm install
 npm run deploy
 ```
-This will download a variety of dependencies prior to performing the deployment.  Check `CloudFormationm` for its completion before proceeding to the next sub step.  Note the `Output` value of `XXX`, which will be used in the final sub step.
+This will download a variety of dependencies and generate some keys prior to performing the deployment.  The `npm install` may initially fail and ask you to run a `snyk wizard` as a security check prior to proceeding as well as potentially `npm audit fix` to fix any vulnerabilities found.  This requires the [snyk cli](https://snyk.io/docs/cli-installation/).
+
+Check `CloudFormationm` for its completion before proceeding to the next sub step.  Note the `Output` value of `XXX`, which will be used in the final sub step.
 
 ### Step 4c: Configuring OpenId
 

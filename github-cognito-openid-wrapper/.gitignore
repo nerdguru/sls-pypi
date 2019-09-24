@@ -1,0 +1,11 @@
+config.sh
+node_modules/*
+jwtRS256.key
+jwtRS256.key.pub
+.snyk
+coverage/*
+dist-lambda/*
+dist-web/*
+logs/*
+pacts/*
+serverless-output.yml
