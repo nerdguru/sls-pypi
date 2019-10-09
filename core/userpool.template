@@ -1,0 +1,3 @@
+USERPOOL_ID: <replace with your Cognito user pool ID>
+CLIENT_ID: <replace with your Cognito app client ID>
+COGNITO_DOMAIN: <replace with your Cognito domain>

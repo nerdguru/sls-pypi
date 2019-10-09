@@ -1,11 +1,12 @@
-var path = 'https://qnuglnxidb.execute-api.us-east-1.amazonaws.com/dev/packages';
-var sitename = 'nerdguru.net';
-var clientId = '7vghvvg0t8doha5ahpbqt68po0';
-var appWebDomain = 'gittest.auth.us-west-2.amazoncognito.com';
-var redirectUriSignIn = 'https://pypi.nerdguru.net/git-test/';
-var redirectUriSignOut = 'https://pypi.nerdguru.net/git-logout/';
-var identityProvider = 'githubtest';
-var userPoolId = 'us-west-2_rJzthZzHO';
+var path = 'API_PATH';
+var userPoolId = 'USERPOOL_ID';
+var clientId = 'CLIENT_ID';
+var appWebDomain = 'COGNITO_DOMAIN';
+
+var redirectUriSignIn = 'https://pypi.CORE_DOMAIN/my/';
+var redirectUriSignOut = 'https://pypi.CORE_DOMAIN/my/';
+var sitename = 'CORE_DOMAIN';
+var identityProvider = 'GitHub';
 
 var packageList;
 var auth;
@@ -151,7 +152,7 @@ function initCognitoSDK() {
   var authData = {
     ClientId: clientId,
     AppWebDomain: appWebDomain,
-    TokenScopesArray: ['email', 'openid', 'profile', 'aws.cognito.signin.user.admin'],
+    TokenScopesArray: ['openid'],
     RedirectUriSignIn: redirectUriSignIn,
     RedirectUriSignOut: redirectUriSignOut,
     IdentityProvider: identityProvider,

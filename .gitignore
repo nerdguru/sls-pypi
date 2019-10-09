@@ -1,2 +1,4 @@
 .DS_Store
 .serverless/
+core/github.yml
+core/userpool.yml

@@ -59,5 +59,6 @@
   3 hrs - 9/23 UI makeover middle, + automation
   2 hrs - 9/24 Refactored first CloudFormation step to output all needed user pool items
 2.5 hr  - 9/25 Documenting steps and making final work, which as of 1p it isn't, troubleshooting needed
-  2 hr  - 10/9 After another 2 hrs of diagnosing, come to conclusion that automating Cognito isn't worth it
+  2 hrs - 10/9 After another 2 hrs of diagnosing, come to conclusion that automating Cognito isn't worth it
   1 hr  - 10/9 Removed User Pool automations from custom-resource-providers.yaml, need to fix docs w manual instructions
+  3 hrs - 10/9 Fixing installation process given new manual stuff

@@ -186,6 +186,9 @@ Your federated login configuration is now complete.
 ## Step 5: Installing the core components
 sls-pypi core components require a GitHub access token with repo:public_repo and the AWS Systems Manager is used to manage that access token securely.  In order for the deployment process to set that access token, open the `github.template` file in the `core` folder, replace the value so that it contains your access token, and save the result as `github.yml`.  Alternatively, set the key to a bogus value for deployment and after the deployment step below completes, manually set the access token in the AWS Systems Manager console.
 
+Similarly, n order for the deployment process to access information about the User Pool,
+App Client, and User Pool Domain, open the `userpool.template` file in the `core` folder, replace the value so that it contains the information asked for there, and save the result as `userpool.yml`.
+
 Then perform the following in the `core` folder:
 ```
 sls deploy
@@ -193,6 +196,15 @@ sls deploy
 This will deploy the final stack, including all the Lambda functions and IAM Roles/Permissions for the functions.
 
 ## Step 6: Generating the Base HTML
+To generate the base my site:
+```
+sls invoke --function initMy
+```
+
+To generate the base public site:
+```
+sls invoke --function webRoot
+```
 
 ## Step 7: Testing the deployment
 In order to test your deployment, see the two sample packages ([samples101](https://github.com/nerdguru/samples101) and [samples201](https://github.com/nerdguru/samples201)), copy them locally, create your own public repositories of the copy, and try to submit them.
