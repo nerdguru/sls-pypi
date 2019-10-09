@@ -57,4 +57,7 @@
   3 hrs - 9/19 Got the Tim example working with a valid login, figured out how to get extended user info
   1 hr  - 9/20 UI makeover start
   3 hrs - 9/23 UI makeover middle, + automation
-0.5 hrs - 9/24 Refactored first CloudFormation step to output all needed user pool items
+  2 hrs - 9/24 Refactored first CloudFormation step to output all needed user pool items
+2.5 hr  - 9/25 Documenting steps and making final work, which as of 1p it isn't, troubleshooting needed
+  2 hr  - 10/9 After another 2 hrs of diagnosing, come to conclusion that automating Cognito isn't worth it
+  1 hr  - 10/9 Removed User Pool automations from custom-resource-providers.yaml, need to fix docs w manual instructions

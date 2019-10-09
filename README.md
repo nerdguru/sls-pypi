@@ -17,7 +17,6 @@ Like any modern project, this one stands on the shoulders of others that are lev
 * [s3pypi](https://github.com/novemberfiveco/s3pypi) - Provides a really nice set of CloudFormation templates for setting up an S3 bucket with a combination of CloudFront and AWS Certificate Manager so that `pip install` will work correctly.
 * [Serverless Framework](http://serverless.com) - The leaders in serverless tooling eases the packaging and trigger management for functions.
 * [Serverless Stack](https://serverless-stack.com/) - The canonical real world example for building secure, serverless webapps.
-* [CloudFormationCognitoCustomResources](https://github.com/rosberglinhares/CloudFormationCognitoCustomResources) - Per [this Stack Overflow thread](https://stackoverflow.com/questions/49524493/cloudformation-cognito-how-to-setup-app-client-settings-domain-and-federated/50980165#50980165), not all the steps required to set up Cognito properly to protect a set of API Endpoints are possible with default CloudFormation constructs.
 * [github-cognito-openid-wrapper](https://github.com/TimothyJones/github-cognito-openid-wrapper) - Bridges the gap between Cognito and the GitHub login system so that API endpoints can be secured using an authenticator familiar to developers.
 * [serverless-s3-sync](https://github.com/k1LoW/serverless-s3-sync) - Serverless Plug-In for synch'ing files from a local folder to an S3 bucket.
 * [fuse](https://github.com/krisk/fuse) - Amazingly simple Javascript library used for site search of the web presence.
