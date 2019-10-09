@@ -248,6 +248,21 @@ functions:
           topicName: ${self:provider.custom.WEB_ROOT_TOPIC}
           displayName: Triggers processing of static home web page
 
+  initMy:
+    handler: batch/initMy.initMy
+    role: initMyRole
+    timeout: 600
+    environment:
+      WEB_BUCKET_NAME: !ImportValue sls-pypi-certificate-BaseDomain
+      TEMPLATES_BUCKET_NAME: ${self:provider.custom.TEMPLATE_BUCKET_NAME}
+      PYPI_BUCKET_NAME: !ImportValue sls-pypi-certificate-PypiDomain
+      HEADER_SUBTEXT: ${self:provider.custom.HEADER_SUBTEXT}
+      USERPOOL_ID: ${file(./userpool.yml):USERPOOL_ID}
+      CLIENT_ID: ${file(./userpool.yml):CLIENT_ID}
+      COGNITO_DOMAIN: ${file(./userpool.yml):COGNITO_DOMAIN}
+      API_CORE: { "Ref" : "ApiGatewayRestApi" }
+      API_REMAINDER: .execute-api.${opt:region, self:provider.region}.amazonaws.com/${opt:stage, self:provider.stage}/packages
+
 resources:
   # CloudFormation yml for dependent services
   Resources:
@@ -391,6 +406,10 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${self:provider.custom.QUERY_RESULTS_BUCKET_NAME}
+        LifecycleConfiguration:
+          Rules:
+            - ExpirationInDays: 30
+              Status: 'Enabled'
 
     # Athena database
     AthenaDB:
@@ -1190,3 +1209,61 @@ resources:
                         - Ref: 'AWS::Region'
                         - Ref: 'AWS::AccountId'
                         - 'log-group:/aws/lambda/*:*:*'
+
+     # Custom role for the webProcess function
+    initMyRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: initMyRole
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                 - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+         - PolicyName: initMyExecution
+           PolicyDocument:
+             Version: '2012-10-17'
+             Statement:
+               - Effect: Allow
+                 Action:
+                   - s3:ListBucket
+                 Resource:
+                   Fn::Join:
+                     - ':'
+                     - - 'arn:aws:s3::'
+                       - !ImportValue sls-pypi-certificate-PypiDomain
+               - Effect: Allow
+                 Action:
+                   - s3:PutObject
+                   - s3:PutObjectAcl
+                 Resource:
+                   Fn::Join:
+                     - ''
+                     - - 'arn:aws:s3:::'
+                       - !ImportValue sls-pypi-certificate-PypiDomain
+                       - '/*'
+               - Effect: Allow
+                 Action:
+                   - s3:GetObject
+                 Resource: arn:aws:s3:::${self:provider.custom.TEMPLATE_BUCKET_NAME}/*
+               - Effect: Allow
+                 Action:
+                   - s3:ListBucket
+                 Resource: arn:aws:s3:::${self:provider.custom.TEMPLATE_BUCKET_NAME}/
+               - Effect: Allow # note that these rights are given in the default policy and are required if you want logs out of your lambda(s)
+                 Action:
+                   - logs:CreateLogGroup
+                   - logs:CreateLogStream
+                   - logs:PutLogEvents
+                 Resource:
+                   - 'Fn::Join':
+                     - ':'
+                     -
+                       - 'arn:aws:logs'
+                       - Ref: 'AWS::Region'
+                       - Ref: 'AWS::AccountId'
+                       - 'log-group:/aws/lambda/*:*:*'
