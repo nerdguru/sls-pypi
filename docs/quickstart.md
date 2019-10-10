@@ -186,8 +186,10 @@ Your federated login configuration is now complete.
 ## Step 5: Installing the core components
 sls-pypi core components require a GitHub access token with repo:public_repo and the AWS Systems Manager is used to manage that access token securely.  In order for the deployment process to set that access token, open the `github.template` file in the `core` folder, replace the value so that it contains your access token, and save the result as `github.yml`.  Alternatively, set the key to a bogus value for deployment and after the deployment step below completes, manually set the access token in the AWS Systems Manager console.
 
-Similarly, n order for the deployment process to access information about the User Pool,
+Similarly, in order for the deployment process to access information about the User Pool,
 App Client, and User Pool Domain, open the `userpool.template` file in the `core` folder, replace the value so that it contains the information asked for there, and save the result as `userpool.yml`.
+
+Finally, in order to have the header and footer messages be customized, open the `messages.template` file in the `core` folder, replace the value so that it contains the information asked for there, and save the result as `messages.yml`.
 
 Then perform the following in the `core` folder:
 ```

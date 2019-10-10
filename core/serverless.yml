@@ -22,8 +22,8 @@ provider:
     WEB_TOPIC: ${self:service}-${opt:stage, self:provider.stage}-web-topic
     WEB_ROOT_TOPIC: ${self:service}-${opt:stage, self:provider.stage}-web-root-topic
     REMOVE_WEB_TOPIC: ${self:service}-${opt:stage, self:provider.stage}-remove-web-topic
-    FOOTER_TEXT: 'Data from Github and internal usage statistics'
-    HEADER_SUBTEXT: 'An alternate Python Package Index'
+    FOOTER_TEXT: ${file(./messages.yml):FOOTER_TEXT}
+    HEADER_SUBTEXT: ${file(./messages.yml):HEADER_SUBTEXT}
 
 layers:
   UIgen:

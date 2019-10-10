@@ -2,3 +2,4 @@
 .serverless/
 core/github.yml
 core/userpool.yml
+core/messages.yml
