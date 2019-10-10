@@ -62,3 +62,5 @@
   2 hrs - 10/9 After another 2 hrs of diagnosing, come to conclusion that automating Cognito isn't worth it
   1 hr  - 10/9 Removed User Pool automations from custom-resource-providers.yaml, need to fix docs w manual instructions
   3 hrs - 10/9 Fixing installation process given new manual stuff
+0.5 hrs - 10/9 Fixed deletion policies on #26 and #27
+0.5 hrs - 10/9 Added licensing to close #23
