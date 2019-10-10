@@ -49,9 +49,11 @@ function remove(id) {
         list();
       },
 
-    error: function (data) {
-        console.log('Response: ' + JSON.stringify(data, null, 2));
+    error: function (jqXHR, exception)  {
+        console.log('Error code: ' + jqXHR.status);
+        console.log('Exception: ' + jqXHR.responseText);
         document.body.style.cursor = 'auto';
+        alert(jqXHR.responseText);
         list();
       },
   });
@@ -61,6 +63,7 @@ function publish(id) {
   document.body.style.cursor = 'wait';
   console.log('Post path: ' + path + '/' + id);
   removeWait = true;
+
   $.ajax({
     url: path + '/' + id,
     type: 'POST',
@@ -70,9 +73,11 @@ function publish(id) {
         list();
       },
 
-    error: function (data) {
-        console.log('Response: ' + JSON.stringify(data, null, 2));
+    error: function (jqXHR, exception)  {
+        console.log('Error code: ' + jqXHR.status);
+        console.log('Exception: ' + jqXHR.responseText);
         document.body.style.cursor = 'auto';
+        alert(jqXHR.responseText);
         list();
       },
   });
@@ -294,7 +299,7 @@ document.getElementById('loggedOut').addEventListener('click', function () {
       auth.getSession();
     });
 
-document.getElementById('loggedIn').addEventListener('click', function () {
+document.getElementById('logout').addEventListener('click', function () {
       console.log('Attempting logout');
       auth.signOut();
       toggleLogout();

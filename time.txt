@@ -1,3 +1,5 @@
+Recording actual work hours so a comparison to an FTE can be made
+
  20 hrs - Beginning 4/18 and ending 5/8, this is the prior work down the CLI path
   4 hrs - Pre 5/19 on investigating s3pypi, back end drawings, and adapting the serverless Python example in predecessor repo
 3.5 hrs - 5/19 discovered cfn-certificate-provider while trying to automate the cert creation
@@ -64,3 +66,6 @@
   3 hrs - 10/9 Fixing installation process given new manual stuff
 0.5 hrs - 10/9 Fixed deletion policies on #26 and #27
 0.5 hrs - 10/9 Added licensing to close #23
+0.5 hrs - 10/9 custom header/footer to close #31
+  1 hr  - 10/10 back end on #30
+1.5 hrs - 10/10 Front end on #30

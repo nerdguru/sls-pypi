@@ -1196,6 +1196,12 @@ resources:
                         - Ref: 'AWS::Region'
                         - Ref: 'AWS::AccountId'
                         - 'parameter/GitHubAccessToken'
+                - Effect: Allow
+                  Action:
+                    - dynamodb:Query
+                    - dynamodb:Scan
+                  Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.custom.PACKAGES_DYNAMODB_TABLE}"
+
                 - Effect: Allow # note that these rights are given in the default policy and are required if you want logs out of your lambda(s)
                   Action:
                     - logs:CreateLogGroup

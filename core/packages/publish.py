@@ -64,6 +64,33 @@ def publish(event, context):
     print('Access token: ' + access_token)
     print()
 
+    # First check to make sure the ID doesn't collide with "my"
+    if(event['pathParameters']['id'] == 'my'):
+        print('409 return, attempt to publish a package named my')
+        response = {
+            "statusCode": 409,
+            "headers": { 'Access-Control-Allow-Origin': '*' },
+            "body": 'Package name collides with a reserved name, please choose another name'
+        }
+        return response
+
+    # Now check with the packages table for another collision
+    dynamodb = boto3.resource('dynamodb')
+    packages_table = dynamodb.Table(os.environ['PACKAGES_DYNAMODB_TABLE'])
+    packages_result = packages_table.scan()
+    package_list = []
+    for item in packages_result['Items']:
+        if item['package'] == event['pathParameters']['id']:
+            if item['author'] != username:
+                print('409 return, attempt to publish a package whose name collides with one already submitted by another user')
+                response = {
+                    "statusCode": 409,
+                    "headers": { 'Access-Control-Allow-Origin': '*' },
+                    "body": 'Package name collides with a package owned by another user, please choose another name'
+                }
+                return response
+
+
     # Load the package into the pypi bucket
     target_path = '/tmp/' + event['pathParameters']['id'] + '/'
     print('Target path: ' + target_path)
@@ -94,7 +121,6 @@ def publish(event, context):
        print('Error while deleting directory')
 
     # Write author/package to database table
-    dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table(os.environ['PACKAGES_DYNAMODB_TABLE'])
     item = {
         'package': event['pathParameters']['id'],
