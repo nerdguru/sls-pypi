@@ -159,6 +159,7 @@ function list() {
 
     error: function (data) {
         console.log('Error Response: ' + JSON.stringify(data, null, 2));
+        document.body.style.cursor = 'auto';
       },
 
     beforeSend: function (xhr) {

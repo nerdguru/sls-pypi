@@ -60,7 +60,7 @@ def publish(event, context):
     print('PACKAGES_DYNAMODB_TABLE: ' + os.environ['PACKAGES_DYNAMODB_TABLE'])
     print('PYPI_BUCKET_NAME: ' + os.environ['PYPI_BUCKET_NAME'])
     print('COGNITO_DOMAIN: ' + os.environ['COGNITO_DOMAIN'])
-    username = os.environ['USERNAME']
+    username = event['requestContext']['authorizer']['claims']['profile'].split('/')[3]
     print('Username: ' + username)
     print('Id: ' + event['pathParameters']['id'])
     access_token = get_secret('GitHubAccessToken')

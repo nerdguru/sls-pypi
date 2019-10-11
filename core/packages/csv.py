@@ -8,7 +8,7 @@ def csv(event, context):
     print('Auth Token: ' + event['headers']['Authorization'])
     print('WEB_DYNAMODB_TABLE: ' + os.environ['WEB_DYNAMODB_TABLE'])
     print('COGNITO_DOMAIN: ' + os.environ['COGNITO_DOMAIN'])
-    username = os.environ['USERNAME']
+    username = event['requestContext']['authorizer']['claims']['profile'].split('/')[3]
     print('Username: ' + username)
     print('Id: ' + event['pathParameters']['id'])
     print()

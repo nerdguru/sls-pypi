@@ -70,4 +70,4 @@ Recording actual work hours so a comparison to an FTE can be made
   1 hr  - 10/10 back end on #30
 1.5 hrs - 10/10 Front end on #30
   5 hr  - 10/10 Started #9, got list working to authorize in Postman, but not browser
-  1 hr  - 10/11 Applying #9 auth to other functions besides list
+  2 hr  - 10/11 Applying #9 auth to other functions besides list and closing #9!

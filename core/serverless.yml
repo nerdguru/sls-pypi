@@ -48,7 +48,7 @@ functions:
     environment:
       PACKAGES_DYNAMODB_TABLE: ${self:provider.custom.PACKAGES_DYNAMODB_TABLE}
       PYPI_BUCKET_NAME: !ImportValue sls-pypi-certificate-PypiDomain
-      USERNAME: 'nerdguru'
+      COGNITO_DOMAIN: ${file(./userpool.yml):COGNITO_DOMAIN}
     layers:
       - {Ref: UIgenLambdaLayer}
     events:
@@ -56,6 +56,9 @@ functions:
           path: packages/{id}
           method: post
           cors: true
+          authorizer:
+            name: authorizer
+            arn: ${file(./userpool.yml):USERPOOL_ARN}
 
   list:
     handler: packages/list.list
@@ -65,7 +68,6 @@ functions:
       PACKAGES_DYNAMODB_TABLE: ${self:provider.custom.PACKAGES_DYNAMODB_TABLE}
       WEB_DYNAMODB_TABLE: ${self:provider.custom.WEB_DYNAMODB_TABLE}
       COGNITO_DOMAIN: ${file(./userpool.yml):COGNITO_DOMAIN}
-      USERNAME: 'nerdguru'
     layers:
       - {Ref: UIgenLambdaLayer}
     events:
@@ -83,7 +85,8 @@ functions:
     environment:
       WEB_DYNAMODB_TABLE: ${self:provider.custom.WEB_DYNAMODB_TABLE}
       COGNITO_DOMAIN: ${file(./userpool.yml):COGNITO_DOMAIN}
-      USERNAME: 'nerdguru'
+    layers:
+      - {Ref: UIgenLambdaLayer}
     events:
       - http:
           path: packages/{id}
@@ -99,12 +102,17 @@ functions:
     environment:
       PACKAGES_DYNAMODB_TABLE: ${self:provider.custom.PACKAGES_DYNAMODB_TABLE}
       PYPI_BUCKET_NAME: !ImportValue sls-pypi-certificate-PypiDomain
-      USERNAME: 'nerdguru'
+      COGNITO_DOMAIN: ${file(./userpool.yml):COGNITO_DOMAIN}
+    layers:
+      - {Ref: UIgenLambdaLayer}
     events:
       - http:
           path: packages/{id}
           method: delete
           cors: true
+          authorizer:
+            name: authorizer
+            arn: ${file(./userpool.yml):USERPOOL_ARN}
 
 # Batch Functions
   athenaQuery:
