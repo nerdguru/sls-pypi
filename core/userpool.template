@@ -1,3 +1,4 @@
 USERPOOL_ID: <replace with your Cognito user pool ID>
+USERPOOL_ARN: <replace with your Cognito user pool ARN>
 CLIENT_ID: <replace with your Cognito app client ID>
 COGNITO_DOMAIN: <replace with your Cognito domain>

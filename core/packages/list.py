@@ -28,10 +28,13 @@ def removeDuplicates(listofElements):
 def list(event, context):
 
     access_token = get_secret('GitHubAccessToken')
+    print(json.dumps(event))
+    print('Auth Token: ' + event['headers']['Authorization'])
     print('Access token: ' + access_token)
     print('PYPI_BUCKET_NAME: ' + os.environ['PYPI_BUCKET_NAME'])
     print('PACKAGES_DYNAMODB_TABLE: ' + os.environ['PACKAGES_DYNAMODB_TABLE'])
     print('WEB_DYNAMODB_TABLE: ' + os.environ['WEB_DYNAMODB_TABLE'])
+    print('COGNITO_DOMAIN: ' + os.environ['COGNITO_DOMAIN'])
     username = os.environ['USERNAME']
     print('Username: ' + username)
     print()

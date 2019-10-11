@@ -119,12 +119,34 @@ function confirmSubmit(package) {
 function list() {
   document.body.style.cursor = 'wait';
   console.log('Trying: ' + path);
-  $.get(path, function (data) {
-    console.log('Response: ' + JSON.stringify(data, null, 2));
-    packageList = data;
-    renderSubmitted();
-    renderUnsubmitted();
-    document.body.style.cursor = 'auto';
+
+  // $.get(path, function (data) {
+  //   console.log('Response: ' + JSON.stringify(data, null, 2));
+  //   packageList = data;
+  //   renderSubmitted();
+  //   renderUnsubmitted();
+  //   document.body.style.cursor = 'auto';
+  // });
+  $.ajax({
+    url: path,
+    type: 'GET',
+    success: function (data) {
+        console.log('Response: ' + JSON.stringify(data, null, 2));
+        packageList = data;
+        renderSubmitted();
+        renderUnsubmitted();
+        document.body.style.cursor = 'auto';
+      },
+
+    error: function (data) {
+        console.log('Error Response: ' + JSON.stringify(data, null, 2));
+      },
+
+    beforeSend: function (xhr) {
+        xhr.setRequestHeader('Authorization',
+          auth.getSignInUserSession().getAccessToken().jwtToken);
+        xhr.setRequestHeader('access-control-allow-origin', '*');
+      },
   });
 }
 

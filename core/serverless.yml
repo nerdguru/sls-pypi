@@ -55,6 +55,7 @@ functions:
       - http:
           path: packages/{id}
           method: post
+          cors: true
 
   list:
     handler: packages/list.list
@@ -63,6 +64,7 @@ functions:
       PYPI_BUCKET_NAME: !ImportValue sls-pypi-certificate-PypiDomain
       PACKAGES_DYNAMODB_TABLE: ${self:provider.custom.PACKAGES_DYNAMODB_TABLE}
       WEB_DYNAMODB_TABLE: ${self:provider.custom.WEB_DYNAMODB_TABLE}
+      COGNITO_DOMAIN: ${file(./userpool.yml):COGNITO_DOMAIN}
       USERNAME: 'nerdguru'
     layers:
       - {Ref: UIgenLambdaLayer}
@@ -70,6 +72,10 @@ functions:
       - http:
           path: packages
           method: get
+          cors: true
+          authorizer:
+            name: authorizer
+            arn: ${file(./userpool.yml):USERPOOL_ARN}
 
   csv:
     handler: packages/csv.csv
@@ -81,6 +87,7 @@ functions:
       - http:
           path: packages/{id}
           method: get
+          cors: true
 
   delete:
     handler: packages/delete.delete
