@@ -4,8 +4,11 @@ import boto3
 
 def delete(event, context):
 
+    print(json.dumps(event))
+    print('Auth Token: ' + event['headers']['Authorization'])
     print('PACKAGES_DYNAMODB_TABLE: ' + os.environ['PACKAGES_DYNAMODB_TABLE'])
     print('PYPI_BUCKET_NAME: ' + os.environ['PYPI_BUCKET_NAME'])
+    print('COGNITO_DOMAIN: ' + os.environ['COGNITO_DOMAIN'])
     username = os.environ['USERNAME']
     print('Username: ' + username)
     print('Id: ' + event['pathParameters']['id'])

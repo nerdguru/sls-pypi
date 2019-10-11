@@ -29,12 +29,6 @@ function csv(package) {
   document.body.style.cursor = 'wait';
   console.log('Trying: ' + path + '/' + package);
 
-  // $.get(path + '/' + package, function (data) {
-  //   console.log('Response: ' + data.csv);
-  //   document.body.style.cursor = 'auto';
-  //   download(package + '.csv', decodeURIComponent(data.csv));
-  // });
-
   $.ajax({
     url: path + '/' + package,
     type: 'GET',
@@ -78,6 +72,11 @@ function remove(id) {
         alert(jqXHR.responseText);
         list();
       },
+
+    beforeSend: function (xhr) {
+        xhr.setRequestHeader('Authorization',
+          auth.getSignInUserSession().idToken.jwtToken);
+      },
   });
 }
 
@@ -101,6 +100,11 @@ function publish(id) {
         document.body.style.cursor = 'auto';
         alert(jqXHR.responseText);
         list();
+      },
+
+    beforeSend: function (xhr) {
+        xhr.setRequestHeader('Authorization',
+          auth.getSignInUserSession().idToken.jwtToken);
       },
   });
 }
