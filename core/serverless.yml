@@ -82,12 +82,16 @@ functions:
     role: apiCsvRole
     environment:
       WEB_DYNAMODB_TABLE: ${self:provider.custom.WEB_DYNAMODB_TABLE}
+      COGNITO_DOMAIN: ${file(./userpool.yml):COGNITO_DOMAIN}
       USERNAME: 'nerdguru'
     events:
       - http:
           path: packages/{id}
           method: get
           cors: true
+          authorizer:
+            name: authorizer
+            arn: ${file(./userpool.yml):USERPOOL_ARN}
 
   delete:
     handler: packages/delete.delete
@@ -317,90 +321,6 @@ resources:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
         TableName: ${self:provider.custom.WEB_DYNAMODB_TABLE}
-
-    # Identity Pool
-    # CognitoIdentityPool:
-    #   Type: AWS::Cognito::IdentityPool
-    #   Properties :
-    #     AllowUnauthenticatedIdentities : false
-    #     IdentityPoolName : ${self:provider.custom.COGNITO_IDENTITY_POOL}
-    #     CognitoIdentityProviders :
-    #       - ClientId : !Ref CognitoAppClient
-    #         ProviderName : !GetAtt CognitoUserPool.ProviderName
-    #         ServerSideTokenCheck : true
-
-    # Create a role for unauthorized acces to AWS resources. Very limited access.
-    # Per https://gist.github.com/singledigit/2c4d7232fa96d9e98a3de89cf6ebe7a5
-    # CognitoUnAuthorizedRole:
-    #   Type: "AWS::IAM::Role"
-    #   Properties:
-    #     AssumeRolePolicyDocument:
-    #       Version: "2012-10-17"
-    #       Statement:
-    #         - Effect: "Allow"
-    #           Principal:
-    #             Federated: "cognito-identity.amazonaws.com"
-    #           Action:
-    #             - "sts:AssumeRoleWithWebIdentity"
-    #           Condition:
-    #             StringEquals:
-    #               "cognito-identity.amazonaws.com:aud": !Ref CognitoIdentityPool
-    #             "ForAnyValue:StringLike":
-    #               "cognito-identity.amazonaws.com:amr": unauthenticated
-    #     Policies:
-    #       - PolicyName: "CognitoUnauthorizedPolicy"
-    #         PolicyDocument:
-    #           Version: "2012-10-17"
-    #           Statement:
-    #             - Effect: "Allow"
-    #               Action:
-    #                 - "mobileanalytics:PutEvents"
-    #                 - "cognito-sync:*"
-    #               Resource: "*"
-    #
-    # # Create a role for authorized acces to AWS resources. Control what your user can access.
-    # # This example only allows Lambda invokation
-    # # Only allows users in the previously created Identity Pool
-    # CognitoAuthorizedRole:
-    #   Type: "AWS::IAM::Role"
-    #   Properties:
-    #     AssumeRolePolicyDocument:
-    #       Version: "2012-10-17"
-    #       Statement:
-    #         - Effect: "Allow"
-    #           Principal:
-    #             Federated: "cognito-identity.amazonaws.com"
-    #           Action:
-    #             - "sts:AssumeRoleWithWebIdentity"
-    #           Condition:
-    #             StringEquals:
-    #               "cognito-identity.amazonaws.com:aud": !Ref CognitoIdentityPool
-    #             "ForAnyValue:StringLike":
-    #               "cognito-identity.amazonaws.com:amr": authenticated
-    #     Policies:
-    #       - PolicyName: "CognitoAuthorizedPolicy"
-    #         PolicyDocument:
-    #           Version: "2012-10-17"
-    #           Statement:
-    #             - Effect: "Allow"
-    #               Action:
-    #                 - "mobileanalytics:PutEvents"
-    #                 - "cognito-sync:*"
-    #                 - "cognito-identity:*"
-    #               Resource: "*"
-    #             - Effect: "Allow"
-    #               Action:
-    #                 - "lambda:InvokeFunction"
-    #               Resource: "*"
-    #
-    # # Assigns the roles to the Identity Pool
-    # IdentityPoolRoleMapping:
-    #   Type: "AWS::Cognito::IdentityPoolRoleAttachment"
-    #   Properties:
-    #     IdentityPoolId: !Ref CognitoIdentityPool
-    #     Roles:
-    #       authenticated: !GetAtt CognitoAuthorizedRole.Arn
-    #       unauthenticated: !GetAtt CognitoUnAuthorizedRole.Arn
 
     # Internal bucket for templates
     TemplateS3Bucket:

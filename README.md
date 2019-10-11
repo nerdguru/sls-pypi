@@ -18,5 +18,6 @@ Like any modern project, this one stands on the shoulders of others that are lev
 * [Serverless Framework](http://serverless.com) - The leaders in serverless tooling eases the packaging and trigger management for functions.
 * [github-cognito-openid-wrapper](https://github.com/TimothyJones/github-cognito-openid-wrapper) - Bridges the gap between Cognito and the GitHub login system so that API endpoints can be secured using an authenticator familiar to developers.
 * [serverless-s3-sync](https://github.com/k1LoW/serverless-s3-sync) - Serverless Plug-In for synch'ing files from a local folder to an S3 bucket.
+* [PyGithub](https://github.com/PyGithub/PyGithub) - For interacting with the GitHub API
 * [fuse](https://github.com/krisk/fuse) - Amazingly simple Javascript library used for site search of the web presence.
 * [boto3](https://github.com/boto/boto3) - The AWS Python SDK.

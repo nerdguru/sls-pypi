@@ -28,10 +28,32 @@ function download(filename, text) {
 function csv(package) {
   document.body.style.cursor = 'wait';
   console.log('Trying: ' + path + '/' + package);
-  $.get(path + '/' + package, function (data) {
-    console.log('Response: ' + data.csv);
-    document.body.style.cursor = 'auto';
-    download(package + '.csv', decodeURIComponent(data.csv));
+
+  // $.get(path + '/' + package, function (data) {
+  //   console.log('Response: ' + data.csv);
+  //   document.body.style.cursor = 'auto';
+  //   download(package + '.csv', decodeURIComponent(data.csv));
+  // });
+
+  $.ajax({
+    url: path + '/' + package,
+    type: 'GET',
+    success: function (data) {
+        console.log('Response: ' + data.csv);
+        document.body.style.cursor = 'auto';
+        download(package + '.csv', decodeURIComponent(data.csv));
+      },
+
+    error: function (jqXHR, exception)  {
+        console.log('Error code: ' + jqXHR.status);
+        console.log('Exception: ' + jqXHR.responseText);
+        document.body.style.cursor = 'auto';
+      },
+
+    beforeSend: function (xhr) {
+        xhr.setRequestHeader('Authorization',
+          auth.getSignInUserSession().idToken.jwtToken);
+      },
   });
 
 }
