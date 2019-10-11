@@ -120,13 +120,6 @@ function list() {
   document.body.style.cursor = 'wait';
   console.log('Trying: ' + path);
 
-  // $.get(path, function (data) {
-  //   console.log('Response: ' + JSON.stringify(data, null, 2));
-  //   packageList = data;
-  //   renderSubmitted();
-  //   renderUnsubmitted();
-  //   document.body.style.cursor = 'auto';
-  // });
   $.ajax({
     url: path,
     type: 'GET',
@@ -144,8 +137,7 @@ function list() {
 
     beforeSend: function (xhr) {
         xhr.setRequestHeader('Authorization',
-          auth.getSignInUserSession().getAccessToken().jwtToken);
-        xhr.setRequestHeader('access-control-allow-origin', '*');
+          auth.getSignInUserSession().idToken.jwtToken);
       },
   });
 }
