@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="amazon-cognito-auth.min.js"></script>
+    <style>
+      .table td {
+        text-align: center;
+      }
+      .table th {
+        text-align: center;
+      }
+    </style>
+    <title>Package Management Help</title>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+      <div style="color: white;">Package Management Help</div>
+    </nav>
+    <main role="main" class="container">
+      <h3>Why do only some repositories show up in <i>Unsubmitted Packages</i>?</h3>
+      <p>After you login via GitHub to the My page, your public repositories will be
+      scanned.  Your repositories that GitHub has tagged as containing Python will
+      be searched for a <i>setup.py</i> and if one is found, that
+      repository is eligible for submittal and will appear in the <i>Unsubmitted Packages</i> table.
+      For general help with packages, see the official
+      <a target="_blank" href="https://packaging.python.org/tutorials/packaging-projects/">Packaging Python Projects</a> page</p>
+      <h3>What happens when the <i>Submit</i> button is pushed?</h3>
+      <p>Your repository is cloned and then <i>python setup.py sdist --formats gztar</i>
+      is executed to generate distribution files for your package.  Those distribution
+      files are the added to the index, a web page is created based on your <i>Readme.md</i>
+      file (the first line is removed and the rest is converted from Markdown to HTML),
+      your package will start getting downloads tracked, and it will appear
+      in the <i>Submitted Packages</i> table.</p>
+      <h3>What happens when the <i>Update</i> button is pushed?</h3>
+      <p>The same exact steps as when the <i>Submit</i> button is pushed.
+      If you have incremented the version number in <i>submit.py</i>, both old
+      versions and the new one will be available on the index.</p>
+      <h3>What happens when the <i>Remove</i> button is pushed?</h3>
+      <p>Your package is removed from the index, as is its web page.  Download
+        statistics are kept, although not accessible, in case the package is re-submitted later.</p>
+    </main>
+  </body>
+</html>

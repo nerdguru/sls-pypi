@@ -35,7 +35,7 @@ def initMy(event, context):
     jsObj = s3.Object(os.environ['TEMPLATES_BUCKET_NAME'], 'amazon-cognito-auth.min.js')
     jsOutput = jsObj.get()['Body'].read().decode('utf-8')
 
-    print('amazon-cognito-auth.min.j, writing')
+    print('amazon-cognito-auth.min.js, writing')
     js_out_obj = s3.Object(os.environ['PYPI_BUCKET_NAME'], 'my/amazon-cognito-auth.min.js')
     js_out_obj.put(Body=jsOutput,ContentType='application/javascript', ACL='public-read')
 
@@ -43,9 +43,18 @@ def initMy(event, context):
     mapObj = s3.Object(os.environ['TEMPLATES_BUCKET_NAME'], 'amazon-cognito-auth.min.js.map')
     mapOutput = mapObj.get()['Body'].read().decode('utf-8')
 
-    print('amazon-cognito-auth.min.j, writing')
+    print('amazon-cognito-auth.min.js.map, writing')
     map_out_obj = s3.Object(os.environ['PYPI_BUCKET_NAME'], 'my/amazon-cognito-auth.min.js.map')
     map_out_obj.put(Body=mapOutput,ContentType='application/javascript', ACL='public-read')
+
+    # Get the template packageManagementHelp.html file
+    helpObj = s3.Object(os.environ['TEMPLATES_BUCKET_NAME'], 'packageManagementHelp.html')
+    helpOutput = helpObj.get()['Body'].read().decode('utf-8')
+
+    print('packageManagementHelp.html, writing')
+    help_out_obj = s3.Object(os.environ['PYPI_BUCKET_NAME'], 'my/packageManagementHelp.html')
+    help_out_obj.put(Body=helpOutput,ContentType='text/html', ACL='public-read')
+
 
     # Get the template rest.js file
     s3 = boto3.resource('s3')
