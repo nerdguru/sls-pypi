@@ -8,6 +8,7 @@ from s3pypi.package import Package
 from s3pypi.storage import S3Storage
 import shutil
 import subprocess
+import time
 
 # recursive download per https://sookocheff.com/post/tools/downloading-directories-of-code-from-github-using-the-github-api/
 def download_folder(repository, rep_path, target_path):
@@ -15,15 +16,23 @@ def download_folder(repository, rep_path, target_path):
 
     for content in contents:
         print('Processing ',  content.path)
+        print('Type ',  content.type)
         if content.type == 'dir':
             if not os.path.isdir(target_path + content.path):
                 os.makedirs(target_path + content.path)
+                print('Folder created: ' + target_path + content.path)
             download_folder(repository, content.path, target_path)
         else:
             try:
                 path = content.path
                 file_content = repository.get_contents(path)
                 file_data = file_content.decoded_content.decode("utf-8")
+
+                # Check for race condition of subfolder creation
+                while os.path.exists(target_path) == False:
+                    print('Does ' + target_path + ' exist? ' + str(os.path.exists(target_path)))
+                    time.sleep(2)
+
                 file_out = open(target_path + content.path, "w+")
                 file_out.write(file_data)
                 file_out.close()
@@ -97,6 +106,7 @@ def publish(event, context):
     # Load the package into the pypi bucket
     target_path = '/tmp/' + event['pathParameters']['id'] + '/'
     print('Target path: ' + target_path)
+    os.makedirs(target_path)
     # First, download the repo in question
     github_name = username + '/' + event['pathParameters']['id']
     g = Github(access_token)

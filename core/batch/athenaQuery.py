@@ -4,7 +4,7 @@ import time
 
 def athenaQuery(event, context):
     # Echo inputs
-    print('Package: ' + event['Records'][0]['Sns']['Message'])
+    print('Package:  ' + event['Records'][0]['Sns']['Message'])
     print('QUERY_RESULTS_BUCKET_NAME: ' + os.environ['QUERY_RESULTS_BUCKET_NAME'])
     print('ATHENA_DB_NAME: ' + os.environ['ATHENA_DB_NAME'])
     print('ATHENA_TABLE_NAME: ' + os.environ['ATHENA_TABLE_NAME'])
