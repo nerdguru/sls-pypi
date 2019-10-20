@@ -4,7 +4,7 @@ import time
 
 def athenaQuery(event, context):
     # Echo inputs
-    print('Package:  ' + event['Records'][0]['Sns']['Message'])
+    print('Package:  ' + event['Records'][0]['Sns']['Message'].lower())
     print('QUERY_RESULTS_BUCKET_NAME: ' + os.environ['QUERY_RESULTS_BUCKET_NAME'])
     print('ATHENA_DB_NAME: ' + os.environ['ATHENA_DB_NAME'])
     print('ATHENA_TABLE_NAME: ' + os.environ['ATHENA_TABLE_NAME'])
@@ -14,7 +14,7 @@ def athenaQuery(event, context):
     query = 'SELECT * FROM "' + os.environ['ATHENA_DB_NAME'] + '"."' + os.environ['ATHENA_TABLE_NAME'] + '"'
     query += ' WHERE "status" = 200'
     query += ' AND ("uri" LIKE \'%.gz\' OR "uri" LIKE \'%.whl\')'
-    query += ' AND "uri" LIKE \'%/' + event['Records'][0]['Sns']['Message'] + '/%\''
+    query += ' AND "uri" LIKE \'%/' + event['Records'][0]['Sns']['Message'].lower() + '/%\''
     query += ' ORDER BY date ASC, time ASC'
     print('Query created: ' + query)
 
