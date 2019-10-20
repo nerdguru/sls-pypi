@@ -9,6 +9,7 @@ from s3pypi.storage import S3Storage
 import shutil
 import subprocess
 import time
+from datetime import datetime
 
 # recursive download per https://sookocheff.com/post/tools/downloading-directories-of-code-from-github-using-the-github-api/
 def download_folder(repository, rep_path, target_path):
@@ -91,6 +92,7 @@ def publish(event, context):
     packages_table = dynamodb.Table(os.environ['PACKAGES_DYNAMODB_TABLE'])
     packages_result = packages_table.scan()
     package_list = []
+    publishDate = ''
     for item in packages_result['Items']:
         if item['package'] == event['pathParameters']['id']:
             if item['author'] != username:
@@ -101,6 +103,8 @@ def publish(event, context):
                     "body": 'Package name collides with a package owned by another user, please choose another name'
                 }
                 return response
+            else:
+                publishDate = item['published']
 
 
     # Load the package into the pypi bucket
@@ -134,11 +138,23 @@ def publish(event, context):
        print('Error while deleting directory')
 
     # Write author/package to database table
+    today = datetime.today().strftime('%Y-%m-%d')
     table = dynamodb.Table(os.environ['PACKAGES_DYNAMODB_TABLE'])
-    item = {
-        'package': event['pathParameters']['id'],
-        'author': username,
-    }
+    if(publishDate != ''):
+        item = {
+            'package': event['pathParameters']['id'],
+            'author': username,
+            'updated': today,
+            'published': publishDate,
+        }
+    else:
+        item = {
+            'package': event['pathParameters']['id'],
+            'author': username,
+            'updated': today,
+            'published': today,
+        }
+
     table.put_item(Item=item)
 
     # create a response
@@ -151,4 +167,6 @@ def publish(event, context):
         "body": json.dumps(retVal)
     }
 
+    # Clean up tmp
+    shutil.rmtree(target_path)
     return response

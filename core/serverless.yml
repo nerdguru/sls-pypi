@@ -198,11 +198,11 @@ functions:
             - ${self:provider.custom.WEB_TOPIC}
     events:
       - s3:
-          existing: true
           bucket: ${self:provider.custom.QUERY_RESULTS_BUCKET_NAME}
+          event: s3:ObjectCreated:*
           rules:
             - suffix: .csv
-          event: s3:ObjectCreated:*
+          existing: true
 
   dynamoPackage:
     handler: batch/dynamoPackage.dynamoPackage
