@@ -67,15 +67,16 @@ def list(event, context):
     package_list.sort()
     s3 = boto3.resource('s3')
     for item in package_list:
+        print('Processing: ' + item)
         retItem = {}
         retItem["package"] = item
         retItem["versions"]=[]
         pypi_bucket = s3.Bucket(os.environ['PYPI_BUCKET_NAME'])
-        for obj in pypi_bucket.objects.filter(Prefix=item):
-            print(obj.key)
+        for obj in pypi_bucket.objects.filter(Prefix=item.lower()):
+            print('Obj with prefix ' + item + ': ' + obj.key)
             if obj.key.endswith('.tar.gz'):
                 version = obj.key.replace('.tar.gz','').replace(item + '/' + item + '-','')
-                print(version)
+                print('Found version: ' + version)
                 retItem["versions"].append(version)
 
         retItem["downloads"] = {}
