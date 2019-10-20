@@ -3,7 +3,7 @@ import json
 import boto3
 import urllib
 
-def csv(event, context):
+def csvDownload(event, context):
     print(json.dumps(event))
     print('Auth Token: ' + event['headers']['Authorization'])
     print('WEB_DYNAMODB_TABLE: ' + os.environ['WEB_DYNAMODB_TABLE'])

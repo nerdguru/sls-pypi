@@ -79,8 +79,8 @@ functions:
             name: authorizer
             arn: ${file(./userpool.yml):USERPOOL_ARN}
 
-  csv:
-    handler: packages/csv.csv
+  csvDownload:
+    handler: packages/csvDownload.csvDownload
     role: apiCsvRole
     environment:
       WEB_DYNAMODB_TABLE: ${self:provider.custom.WEB_DYNAMODB_TABLE}
