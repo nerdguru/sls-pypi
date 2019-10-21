@@ -168,5 +168,6 @@ def publish(event, context):
     }
 
     # Clean up tmp
-    shutil.rmtree(target_path)
+    if  os.path.exists(target_path):
+        shutil.rmtree(target_path)
     return response
