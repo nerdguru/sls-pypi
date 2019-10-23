@@ -2,6 +2,7 @@ import os
 import json
 import boto3
 import urllib
+import urllib.parse
 
 def csvDownload(event, context):
     print(json.dumps(event))
@@ -18,10 +19,10 @@ def csvDownload(event, context):
     web_table = dynamodb.Table(os.environ['WEB_DYNAMODB_TABLE'])
     web_result = web_table.scan()
     csv = ''
-    csv = 'package' + ',' + 'version' + ',' + 'date' + ',' + 'time' + ',' + 'location' + ',' + 'requestIP\r\n'
+    csv = 'package' + ',' + 'version' + ',' + 'date' + ',' + 'time' + ',' + 'location' + ',' + 'requestIp' + ',' + 'agent\r\n'
     for item in web_result['Items']:
         if item['package'] == event['pathParameters']['id']:
-            csv += item['package'] + ',' + item['version'] + ',' + item['date'] + ',' + item['time'] + ',' + item['location'] + ',' + item['requestIP'] + '\r\n'
+            csv += item['package'] + ',' + item['version'] + ',' + item['date'] + ',' + item['time'] + ',' + item['location'] + ',' + item['requestIP'] + ',' + urllib.parse.quote(item['agent']) + '\r\n'
 
     # create a response
     retVal = {}

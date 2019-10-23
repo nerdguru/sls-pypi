@@ -2,6 +2,7 @@ import os
 import boto3
 import re
 import uuid
+from urllib.parse import unquote
 
 def writeWebLogs(event, context):
     # Echo inputs
@@ -24,12 +25,12 @@ def writeWebLogs(event, context):
     table = dynamodb.Table(os.environ['WEB_DYNAMODB_TABLE'])
     for line in lines:
         # Skip the first line
+        print(line)
         if not first:
-            line=line.replace('"','')
-            columns = line.split(',')
+            columns = line.split('","')
             # Only process non-blank lines
             if len(columns) > 1:
-                dlDate = columns[0]
+                dlDate = columns[0].replace('"','')
                 dlTime = columns[1]
                 dlLocation = columns[2]
                 dlReqIP =  columns[4]
@@ -41,7 +42,9 @@ def writeWebLogs(event, context):
                 dlPackage = packVer[0]
                 package = dlPackage
                 dlVersion = packVer[1]
-                print(dlDate + ' ' + dlTime + ' ' + dlLocation + ' ' + dlReqIP + ' ' + dlPackage + ' ' + dlVersion)
+                print(unquote(unquote(columns[10])))
+                dlAgent = unquote(unquote(columns[10]))
+                print(dlDate + ' ' + dlTime + ' ' + dlLocation + ' ' + dlReqIP + ' ' + dlPackage + ' ' + dlVersion + ' ' + dlAgent)
 
                 item = {
                     'id': dlPackage + '-' + dlDate + '-' + dlTime + '-' + dlReqIP,
@@ -51,6 +54,7 @@ def writeWebLogs(event, context):
                     'location': dlLocation,
                     'requestIP': dlReqIP,
                     'version': dlVersion,
+                    'agent': dlAgent,
                 }
                 table.put_item(Item=item)
 
