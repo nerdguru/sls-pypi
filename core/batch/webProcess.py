@@ -101,7 +101,7 @@ def webProcess(event, context):
     # VERSIONS
     versions_string = ''
     pypi_bucket = s3.Bucket(os.environ['PYPI_BUCKET_NAME'])
-    for obj in pypi_bucket.objects.filter(Prefix=package):
+    for obj in pypi_bucket.objects.filter(Prefix=package.lower()):
         print(obj.key)
         if obj.key.endswith('.tar.gz'):
             version = obj.key.replace('.tar.gz','').replace(package + '/' + package + '-','')
